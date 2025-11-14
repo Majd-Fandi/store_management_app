@@ -1,0 +1,119 @@
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: right;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #ddd;
+}
+
+/* Header styles */
+thead {
+    background-color: #f2f2f2;
+}
+
+th {
+    background-color: #4c84af; /* Green background for headers */
+    color: white;
+}
+
+/* Row styles */
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9; /* Light gray for even rows */
+}
+
+tbody tr:hover {
+    background-color: #f1f1f1; /* Light gray on hover */
+}
+
+/* Specific styles for the sales detail table */
+.sales-detail-table {
+    margin-top: 30px; /* Add some space above the sales detail table */
+}
+
+/* Specific styles for the sales list table */
+
+
+/* Link styles */
+a {
+    color: #4c74af; /* Green color for links */
+    text-decoration: none;
+}
+
+hr {
+    border: white ;
+}
+
+
+/* Basic styles for the modal */
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
+}
+.modal-content {
+    border-radius: 4px;
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 40%; 
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.close {
+    cursor: pointer;
+    padding: 0 10px;
+    border-radius: 4px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.close:hover{
+    background-color: #96969644;
+}
+
+/* ================================================== MEDIA QUERIES ============================================================ */
+
+@media (max-width: 768px) {
+    table {
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+
+    .modal-content {
+        width: 70%;
+    }
+}
+
+@media (max-width: 480px) {
+    table {
+        font-size: 12px;
+    }
+
+    th, td {
+        padding: 6px;
+    }
+
+    .modal-content {
+        width: 90%;
+    }
+}

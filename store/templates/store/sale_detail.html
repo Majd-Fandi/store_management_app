@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'store/sales.css' %}">
+
+<p><strong>رقم عملية البيع :</strong> {{ sale.id }}</p>
+<p><strong>تاريخ عملية البيع :</strong> {{ sale.date|date:"Y/m/d"  }}</p>
+<a href="{% url 'list_sales' %}">العودة إلى قائمة المبيعات</a>
+
+<table class="sales-detail-table">
+    <thead>
+        <tr>
+            <th>اسم المنتج</th>
+            <th>الكمية المباعة</th>
+            <th> سعر الوحدة بعد الربح</th>
+            <th>سعر الصرف وقت المبيع SYP</th>
+            <th>إجمالي السعر $</th>
+            <th>إجمالي السعر SYP</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in sale_items %}
+        <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.price_per_item }}</td>
+                <td>{{ item.dollar_rate_at_sale|floatformat:0|intcomma }}</td>
+                <td>{{ item.total_price }}</td>
+                <td>{{ item.total_syp_price|floatformat:0|intcomma }}</td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="4" style="text-align:center">المجموع</td>
+            <td>{{all_items_price}}</td>
+            <td>{{all_items_price_syp|floatformat:0|intcomma}}</td>
+        </tr>
+    </tbody>
+</table>
+
+
+{% endblock %}

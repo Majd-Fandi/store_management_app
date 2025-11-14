@@ -1,0 +1,22 @@
+.classification-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.classification-table th,
+.classification-table td {
+    padding: 12px;
+    text-align: right;
+    border-bottom: 1px solid #ddd;
+}
+
+.classification-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #555;
+}
+
+.classification-table tbody tr:hover {
+    background-color: #f1f1f1;
+}

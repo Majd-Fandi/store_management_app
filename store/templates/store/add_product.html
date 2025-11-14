@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'store/add_update_product.css' %}">
+
+<div class="card">
+<div class="container">
+<form method="post">
+  {% csrf_token %}
+<div class="right-column">
+
+
+  <label class="form-label" > المادة :  </label><br>
+  <input type="text" name="name"><br>
+
+  
+    <label class="form-label" >نوع الإدخال :  </label><br>
+    <select name="type" id="typeSelect" placeholder="إختر طريقة الإضافة">
+      <option value="one" selected>مفرد</option> 
+        <option value="many" >طرد</option>
+    </select>
+
+    <br>
+    
+    <div id="itemsPerPackageContainer" style="display: none;">
+        <label class="form-label"  for="itemsPerPackageInput">عدد القطع في الطرد :</label><br>
+        <input type="number" id="itemsPerPackageInput" name="items_per_package" min="1"><br>
+    </div>
+    
+    
+    
+    <label class="form-label" id="priceLabel">السعر $ : </label><br>
+    <input type="number" step="0.01" name="price"><br>
+    <label class="form-label"  id="quantityLabel">الكمية : </label><br>
+    <input type="number" name="quantity"><br>
+    
+  </div>
+    <div class="left-column">
+          <label class="form-label" >الصنف :  </label><br>
+      <select name="classification" placeholder="اختر صنفاً">
+       <option value="">----</option> 
+       {% for object in classifications %}
+        <option value="{{ object.id }}">
+          {{ object.category }}
+        </option>
+       {% endfor %}
+    </select>
+      <a class="add-classification" href={% url 'add_classification' %}>
+        +
+      </a>
+    <br>
+      <label class="form-label">نسبة الربح % (مفرق) : </label><br>
+      <input type="number" step="1"min="1" placeholder="5%" id="retailPercent" name="retail_sale_percent"><br>
+      <label class="form-label">نسبة الربح % (جملة) : </label><br>
+      <input type="number" step="1"min="1"  placeholder="3%" id="wholePercent" name="whole_sale_percent"><br>
+      
+      <label class="form-label" >الوصف :</label><br>
+      <textarea name="description"></textarea><br>
+  </div>
+
+  <button type="submit" class="btn blue">إضافة</button>
+  <a class="btn green" style="font-size:small" href={% url 'import_products' %}>استيراد من Excel</a>
+  
+  <br>
+  <p class="error">
+    {{error}}
+  </p>
+  
+</form>
+</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.getElementById('typeSelect');
+        const itemsPerPackageContainer = document.getElementById('itemsPerPackageContainer');
+        const priceLabel = document.getElementById('priceLabel');
+        const quantityLabel = document.getElementById('quantityLabel');
+        const itemsPerPackageInput = document.getElementById('itemsPerPackageInput');
+
+        // Text constants
+        const labelOnePrice = "السعر (للقطعة) $ : ";
+        const labelOneQuantity = "الكمية (عدد القطع) : ";
+        const labelManyPrice = "السعر (سعر الطرد) $ : ";
+        const labelManyQuantity = "الكمية (عدد الطرود) : ";
+
+        function updateFormBasedOnType() {
+            const selectedType = typeSelect.value;
+
+            if (selectedType === 'many') {
+                // Type: الطرد (Many)
+                itemsPerPackageContainer.style.display = 'block';
+                itemsPerPackageInput.required = true; // Make it mandatory
+                
+                priceLabel.textContent = labelManyPrice;
+                quantityLabel.textContent = labelManyQuantity;
+            } else {
+                // Type: مفرد (One)
+                itemsPerPackageContainer.style.display = 'none';
+                itemsPerPackageInput.required = false;
+                itemsPerPackageInput.value = ''; // Clear the value when hidden
+                
+                priceLabel.textContent = labelOnePrice;
+                quantityLabel.textContent = labelOneQuantity;
+            }
+        }
+
+        // 1. Attach the event listener to the type selection
+        typeSelect.addEventListener('change', updateFormBasedOnType);
+
+        // 2. Run the function once on load to set the correct initial state
+        updateFormBasedOnType(); 
+    });
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+{% comment %} {% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+<div class="card">
+<form method="post">
+  {% csrf_token %}
+
+    <label>الصنف :  </label><br>
+     <select name="classification" placeholder="اختر صنفاً">
+      <option value="">اختر تصنيف (اختياري)</option> 
+     {% for object in classifications %}
+       <option value="{{ object.id }}">
+         {{ object.category }}
+       </option>
+     {% endfor %}
+   </select>
+     <a href={% url 'add_classification' %} class="classification">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+            stroke-miterlimit="10" stroke-width="2" d="M6 12h12m-6 6V6" />
+    </svg>
+     </a>
+   <br>
+
+  <label> المادة :  </label><br>
+  <input type="text" name="name"><br>
+
+  
+     <label>نوع الإدخال :  </label><br>
+     <select name="type" placeholder="إختر طريقة الإضافة">
+      <option value="one" >مفرد</option> 
+       <option value="many" >طرد</option>
+   </select>
+
+   <br>
+
+
+  <label>الوصف :</label><br>
+  <textarea name="description"></textarea><br>
+  <label>السعر : </label><br>
+  <input type="number" step="0.01" name="price"><br>
+  <label>الكمية : </label><br>
+  <input type="number" name="quantity"><br>
+  <button type="submit" class="btn blue">إضافة</button>
+  <button type="button" class="btn green">
+    <a href={% url 'import_products' %}>استيراد من Excel</a>
+  </button>
+  <br>
+  <p class="error">
+    {{error}}
+  </p>
+</form>
+</div>
+{% endblock %} {% endcomment %}

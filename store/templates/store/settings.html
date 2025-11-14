@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="card">
+<form method="POST">
+    {% csrf_token %}
+    <h3 style="padding-top:10px;padding-bottom:10px;">إعدادات النظام : </h3>
+    {% for setting in settings %}
+        <div>
+            <label class="form-label" for="{{ setting.key }}">
+                {{ setting.label }}
+            </label>
+            <br>
+            <input type="number" step="1" name="{{ setting.key }}" value="{{ setting.value|floatformat:0 }}">
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn blue">حفظ</button>
+</form>
+<hr style="border: 0; height: 1px; background: #ddd; margin: 20px 0;">
+
+<h3 style="padding-top:10px;padding-bottom:10px;">سجل المبيعات : </h3>
+    <button type='button' class='btn red' id="delete-btn">حذف سجل المبيعات</button>
+</div>
+
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <p>هل تريد حذف سجل المبيعات ؟</p>
+            <div class="modal-actions">
+                <button class="btn red">
+                    <a href="{% url 'remove_all_sales' %}">حذف</a>
+                </button>
+                <button type="button" class="btn gray" id="cancel-delete">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add some CSS for the modal -->
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: white;
+            border-radius:8px;
+            margin: 20% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 250px;
+            text-align: center;
+        }
+        .modal-actions {
+            margin-top: 20px;
+        }
+    </style>
+
+    <!-- Add JavaScript to handle the modal -->
+    <script>
+        // Get the modal and buttons
+        const modal = document.getElementById('delete-modal');
+        const deleteBtn = document.getElementById('delete-btn');
+        const cancelBtn = document.getElementById('cancel-delete');
+
+        // Show the modal when the delete button is clicked
+        deleteBtn.addEventListener('click', () => {
+            modal.style.display = 'block';
+        });
+
+        // Hide the modal when the cancel button is clicked
+        cancelBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        // Hide the modal if the user clicks outside of it
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    </script>
+{% endblock %}

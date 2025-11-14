@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block css-files %}
+<link rel="stylesheet" type="text/css" href="{% static 'store/product_list.css' %}">
+{% endblock %}
+{% block content %}
+<div class="search-bar">
+  <form method="get" action=".">
+    <input 
+      type="text" 
+      name="search" 
+      placeholder="بحث عن المواد بالاسم أو الوصف" 
+      value="{{ search_query|default:'' }}" 
+      id="searchInput"
+    >
+    <select name="quantity" class="quantity-filter">
+      <option value="" {% if not quantity_filter %}selected{% endif %}>فلترة حسب الكمية / الكل</option>
+      <option value="low" {% if quantity_filter == 'low' %}selected{% endif %}>أقل من {{minimum_value|floatformat:0}} قطع</option>
+      <option value="high" {% if quantity_filter == 'high' %}selected{% endif %}>أكثر من {{minimum_value|floatformat:0}} قطع</option>
+      <option value="none" {% if quantity_filter == 'none' %}selected{% endif %}>المواد غير المتوفرة</option>
+    </select>
+
+    <select name="classification">
+      <option value="" {% if not classification_filter %}selected{% endif %}>كل الأصناف</option>
+      <option value="no-category" {% if classification_filter|stringformat:"s" == "no-category" %}selected{% endif %}>البضائع بدون تصنيف</option>
+      {% for object in classifications %}
+        <option value="{{ object.id }}" {% if classification_filter|stringformat:"s" == object.id|stringformat:"s" %}selected{% endif %}>
+          {{ object.category }}
+        </option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn blue">بحث</button>
+    <button type="button" class="btn gray" id="clearSearchInputs">
+      إلغاء البحث
+    </button>
+    <button type="button" class="btn green">
+      <a href="{% url "classifications_list" %}">الأصناف</a>
+    </button>
+  </form>
+</div>
+
+<!-- Arabic Alphabet Filter -->
+<div class="alphabet-filter">
+  {% comment %} Group أ, إ, ا together {% endcomment %}
+  <button type="button" class="alphabet-btn" data-letter="ا">أ</button>
+  
+  {% comment %} Other Arabic letters {% endcomment %}
+  {% with "ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي " as letters %}
+    {% for letter in letters.split %}
+      <button type="button" class="alphabet-btn" data-letter="{{ letter }}">{{ letter }}</button>
+    {% endfor %}
+  {% endwith %}
+  
+  <button type="button" class="alphabet-btn active" data-letter="all">الكل</button>
+</div>
+
+{% if products %}
+{% comment %} <!-- Add the "Select Products to Sell" button -->
+<button type="button" class="btn red" id="selectProductsBtn">
+  إختر منتجات للبيع 
+</button> {% endcomment %}
+<!-- Add the "Proceed to Sell" button -->
+<button type="button" class="btn green" id="proceedToSellBtn" style="display: none;" disabled>
+  بيع المنتجات المحددة
+</button>
+{% endif %}
+
+{% if products %}
+<div class="product-container">
+    {% with None as last_name %}
+      {% for product in products %}
+        {% if last_name != product.name %}
+          {% with product.name as last_name %}
+          {% endwith %}
+        {% endif %}
+        <a href="{% url 'product_detail' product.id %}" class="product-link {% if product.quantity == 0 %}out-of-stock{% endif %}" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}">
+          <div class="product-card">
+            <h3>{{ product.name }}</h3>
+            <h5 class="{% if product.classification %}classification{% else %}no-classification{% endif %}">
+              {{ product.classification|default:"بدون تصنيف" }}
+            </h5>            
+            {% if product.description %}
+              <p class="description">{{ product.description }}</p>
+            {% endif %}
+            <p><strong>سعر القطعة :</strong> $ {{ product.price }}</p>
+            <p><strong>سعر القطعة بالليرة :</strong> SYP {{ product.syp_price|intcomma }}</p>
+            <p>
+              <strong>الكمية المتوفرة :</strong> 
+              <span class="{% if product.quantity < minimum_value %}low-quantity{% else %}high-quantity{% endif %}">
+                {{ product.quantity }}
+              </span>
+            </p>
+          </div>
+        </a> 
+      {% endfor %}
+    {% endwith %}
+  </div>
+  {% else %}
+    <p class="error" style="text-align:center; margin-top:50px">لا يوجد مواد .</p>
+  {% endif %}
+
+  <script>
+    let isSelectMode = false;
+    const selectedProducts = new Set();
+  
+    document.addEventListener('DOMContentLoaded', function() {
+      // Alphabet filter functionality (unchanged)
+      const alphabetButtons = document.querySelectorAll('.alphabet-btn');
+      alphabetButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          alphabetButtons.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          
+          const letter = this.getAttribute('data-letter');
+          const productLinks = document.querySelectorAll('.product-link');
+          
+          productLinks.forEach(link => {
+            const productName = link.getAttribute('data-product-name');
+            let firstLetter = productName.trim().charAt(0).normalize('NFD').replace(/[\u064B-\u065F]/g, '');
+            if (['أ', 'إ', 'ا'].includes(firstLetter)) firstLetter = 'ا';
+            
+            link.style.display = (letter === 'all' || firstLetter === letter) ? 'block' : 'none';
+          });
+        });
+      });
+  
+      // SAFE ELEMENT HANDLING - CORE FIX
+      const selectProductsBtn = document.getElementById('selectProductsBtn');
+      const proceedToSellBtn = document.getElementById('proceedToSellBtn');
+  
+      // Only setup if buttons exist (products available)
+      if (selectProductsBtn && proceedToSellBtn) {
+        // Toggle selection mode (modified with null checks)
+        selectProductsBtn.addEventListener('click', function() {
+          isSelectMode = !isSelectMode;
+  
+          this.textContent = isSelectMode ? 'إلغاء التحديد' : 'إختر منتجات للبيع';
+          proceedToSellBtn.style.display = isSelectMode ? 'inline-block' : 'none';
+          
+          if (!isSelectMode) {
+            selectedProducts.clear();
+            document.querySelectorAll('.product-link.selected').forEach(link => {
+              link.classList.remove('selected');
+            });
+            proceedToSellBtn.disabled = true;
+          }
+        });
+  
+        // Product selection (unchanged but scoped to product-links)
+        document.querySelectorAll('.product-link').forEach(link => {
+          link.addEventListener('click', function(event) {
+            if (!isSelectMode) return;
+            
+            event.preventDefault();
+            const productId = this.getAttribute('data-product-id');
+            
+            if (selectedProducts.has(productId)) {
+              selectedProducts.delete(productId);
+              this.classList.remove('selected');
+            } else {
+              selectedProducts.add(productId);
+              this.classList.add('selected');
+            }
+            
+            proceedToSellBtn.disabled = selectedProducts.size === 0;
+          });
+        });
+  
+        // Proceed to sell (with URL safety check)
+        proceedToSellBtn.addEventListener('click', function() {
+          if (selectedProducts.size === 0) {
+            alert('الرجاء تحديد المنتجات قبل المتابعة');
+            return;
+          }
+          
+          const targetUrl = "{% url 'sell_product' %}";
+          if (!targetUrl) {
+            console.error('Sell product URL not found');
+            return;
+          }
+          
+          const params = new URLSearchParams();
+          selectedProducts.forEach(id => params.append('ids', id));
+          window.location.href = `${targetUrl}?${params.toString()}`;
+        });
+      } else {
+        console.debug('Product action buttons not available (no products?)');
+      }
+    });
+  </script>
+<script>
+    // Clear search functionality
+    document.getElementById('clearSearchInputs').addEventListener('click', function () {
+      console.log("Button element:", document.getElementById('clearSearchInputs'));
+      document.getElementById('searchInput').value = '';
+      const quantityFilter = document.querySelector('.quantity-filter');
+      const classificationFilter = document.querySelector('.classification-filter');
+      if (quantityFilter) {
+        quantityFilter.selectedIndex = 0;
+      }
+      if (classificationFilter) {
+        classificationFilter.selectedIndex = 0;
+      }
+      window.location.href = window.location.pathname;
+    });
+</script>
+
+<style>
+  .selected {
+    border: 2px solid #79b1db;
+    border-radius:8px;
+  }
+
+  #proceedToSellBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .alphabet-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 15px 0;
+    justify-content: center;
+  }
+
+  .alphabet-btn {
+    font:inherit;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .alphabet-btn:hover {
+    background-color: #e9ecef;
+  }
+
+  .alphabet-btn.active {
+    background-color: #939393;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+</style>
+{% endblock %}
+

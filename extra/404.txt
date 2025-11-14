@@ -1,0 +1,11 @@
+To make your custom 404 page work:
+
+Ensure DEBUG = False in settings.py
+
+Add 'django.contrib.staticfiles' to INSTALLED_APPS if using static files
+
+Make sure your 404.html is in the correct templates directory
+
+Restart your development server after changes
+
+The default page shows because Django uses it in debug mode (DEBUG = True).

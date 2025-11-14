@@ -1,0 +1,41 @@
+.container{
+    background-color: white;
+    padding: 2rem;
+    margin: 1rem;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #535353;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #d2d2d2;
+    text-align: right;
+}
+
+thead tr {
+    background-color: #f3f3f3;
+}
+
+tbody tr {
+    background-color: white;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f9f9f9; 
+}
+
+.total-row {
+    background-color: #ffffff;
+}
+
+.success {
+    background-color: #0f9f2ecc;
+    color: white;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+}  

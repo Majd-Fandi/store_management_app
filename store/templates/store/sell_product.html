@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'store/sell_product.css' %}">
+
+<div class="content-container">
+  <!-- Right Column - Product Form -->
+  <div class="right-column">
+    <form id="addProductForm" class="product-form">
+
+    <label class="form-label block-label">المادة :</label>
+    <input list="productOptions" name="product_name_display" id="productSearchInput" placeholder="اكتب اسم المنتج للبحث..." autocomplete="off">
+      
+      <input type="hidden" name="product_id" id="productSelect">
+
+      <datalist id="productOptions">
+      {% for product in products|dictsort:"name" %}
+      {% comment %} ({{ product.quantity }}) {% endcomment %}
+          <option value="{{ product.name }}"
+                  data-id="{{ product.id }}"
+                  data-qty="{{ product.quantity }}" 
+                  data-price="{{ product.price }}" 
+                  retail-percent="{{ product.retail_sale_percent }}" 
+                  whole-percent="{{ product.whole_sale_percent }}" 
+                  data-syp-price="{{ product.syp_price }}">
+       </option>
+       {% endfor %}
+      </datalist>
+<p id="product_quantity"></p>
+
+      
+      <label class="form-label block-label">نوع عملية البيع : </label>
+      <select name='sale_type' id="saleTypeSelect">
+        <option value="0">مفرق</option>
+        <option value="1">جملة</option>
+      </select>
+
+      <div id="productDetails" class="details-container">
+        <p>السعر $ : <span id="originalPrice" style="font-weight: bold;"></span></p>
+        <p>السعر بالليرة السورية : <span id="sypPrice" style="font-weight: bold;"></span></p>
+      </div>
+
+      <label class="form-label block-label">نسبة الربح :</label>
+      <select name="profit_percentage" id="profitSelect">
+        <option value="" id="retailPercentOption"><span id="retailPercent"><span/></option>
+        <option value="" id="wholePercentOption"><span id="wholePercent"><span/></option>
+      </select>
+
+      <div id="profitPrices" class="details-container">
+        <p>السعر بعد الربح $ : <span id="profitPrice" style="font-weight: bold;"></span></p>
+        <p>السعر بالليرة السورية بعد الربح : <span id="sypProfitPrice" style="font-weight: bold;"></span></p>
+      </div>
+
+      <label class="form-label block-label">الكمية :</label>
+      <input type="number" name="quantity" id="quantityInput" min="1">
+
+      <div id="totalPrices" class="details-container">
+        <p> السعر الإجمالي  $ : <span id="totalPrice" style="font-weight: bold;"></span></p>
+        <p>السعر الإجمالي بالليرة السورية : <span id="totalSypPrice" style="font-weight: bold;"></span></p>
+      </div>
+
+      <button type="button" id="addToCartBtn" class="btn green">إضافة للفاتورة</button>
+    </form>
+  </div>
+
+  <!-- Left Column - Cart List -->
+  <div class="left-column">
+    <div id="cartContainer">
+      <table id="cartTable" class="cart-table">
+        <thead>
+          <tr>
+            <th>المنتج</th>
+            <th>الكمية</th>
+            <th>نسبة الربح</th>
+            <th> السعر $ </th>
+            <th>السعر SYP</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="cartItems">
+          <!-- Cart items will be dynamically added here -->
+        </tbody>
+      </table>
+
+      <div id="cartSummary" class="cart-summary">
+        <p>المجموع الكلي $ : <span id="cartTotalPrice" style="font-weight: bold;">0.00</span></p>
+        <p>المجموع الكلي بالليرة السورية : <span id="cartTotalSypPrice" style="font-weight: bold;">0</span></p>
+        <p>صافي الربح $ : <span id="cartTotalProfit" style="font-weight: bold;">0</span></p>
+        <p>صافي الربح بالليرة السورية : <span id="cartTotalSypProfit" style="font-weight: bold;">0</span></p>
+        <form method="post" id="sellForm" action="{% url 'sell_product' %}" style="text-align: center;">
+          {% csrf_token %}
+          <input type="hidden" name="cart_data" id="cartDataInput">
+          <button type="submit" class="btn blue">بيع</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/cart.js' %}"></script>
+{% endblock %}

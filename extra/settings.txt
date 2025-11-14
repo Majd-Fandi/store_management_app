@@ -1,0 +1,13 @@
+to apply initial settings to the database Settings Table :
+
+admin user : admin/admin
+
+in the shell : py manage.py shell :
+from store.models import Settings
+
+Settings.objects.create(key="dollar_rate", value=9000)
+Settings.objects.create(key="minimum", value=10)
+
+or using the fixture json file : 
+
+python manage.py loaddata store/fixtures/settings.json

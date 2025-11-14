@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'store/classifications_list.css' %}">
+
+<table class="classification-table">
+    <thead>
+        <tr>
+            <th>الصنف</th>
+            <th>عدد الأنواع</th>
+            <th>عدد القطع</th>
+            <th> </th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if classifications %}
+            {% for object in classifications %}
+            <tr class="classification-item">
+                <td>{{ object.category }}</td>
+                <td>{{ object.product_type_count }}</td>
+                <td>{{ object.all_types_count }}</td>
+                <td>
+                    <button class="btn red delete-btn" data-id="{{ object.id }}">
+                        حذف
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="4" style=" text-align: center;">لا يوجد أصناف لعرضها</td>
+            </tr>
+        {% endif %}
+        <tr>
+            <td colspan="4" style=" text-align: center;">
+                <a href="{% url "add_classification" %}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-miterlimit="10" stroke-width="2" d="M6 12h12m-6 6V6" />
+                    </svg>
+                </a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+          
+          
+          <!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="modal">
+    <div class="modal-content">
+        {% comment %} <p>هل تريد حذف هذا الصنف ؟</p> {% endcomment %}
+         <p>حذف الصنف سيؤدي إلى إزالته من البضائع المندرجة تحته لتصبح بلا تصنيف , هل تريد الحذف ؟</p>
+        <div class="modal-actions">
+            <button type="button"  class="btn red">
+                <a id="confirm-delete" href="#">حذف</a>
+            </button>
+            <button type="button" class="btn gray" id="cancel-delete">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add some CSS for the modal -->
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+        background-color: white;
+        border-radius: 8px;
+        margin: 20% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 250px;
+        text-align: center;
+    }
+    .modal-actions {
+        margin-top: 20px;
+    }
+</style>
+
+<!-- Add JavaScript to handle the modal -->
+<script>
+    // Get the modal and buttons
+    const modal = document.getElementById('delete-modal');
+    const deleteBtns = document.querySelectorAll('.delete-btn');
+    const cancelBtn = document.getElementById('cancel-delete');
+    const confirmDeleteBtn = document.getElementById('confirm-delete');
+
+    // Add event listeners to all delete buttons
+    deleteBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Get the classification ID from the button's data-id attribute
+            const classificationId = btn.getAttribute('data-id');
+            // Set the href for the confirm delete button
+            confirmDeleteBtn.href = `/remove-category/${classificationId}`;
+            // Show the modal
+            modal.style.display = 'block';
+        });
+    });
+
+    // Hide the modal when the cancel button is clicked
+    cancelBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    // Hide the modal if the user clicks outside of it
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+</script>
+
+{% endblock %}

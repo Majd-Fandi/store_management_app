@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+<div class="card">
+<form method="post">
+  {% csrf_token %}
+  <label class="form-label" >الصنف :  </label><br>
+  <input type="text" name="category"><br>
+  <button type="submit" class="btn blue">إضافة</button>
+
+  <p class="error">
+    {{error}}
+  </p>
+</form>
+</div>
+{% endblock %}

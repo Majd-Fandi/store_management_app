@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'store/statistics.css' %}">
+
+<script src="{% static 'js/chart.js' %}"></script>
+{% comment %} <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> {% endcomment %}
+
+<div class="card">
+    <form method="get">
+        <div class="form-group">
+            <label class="form-label"  for="{{ form.start_date.id_for_label }}">من تاريخ : </label>
+            {{ form.start_date }}
+        </div>
+        <div class="form-group">
+            <label class="form-label"  for="{{ form.end_date.id_for_label }}">إلى تاريخ : </label>
+            {{ form.end_date }}
+        </div>
+        <button type="submit" class="btn blue">تشكيل</button>
+    </form>
+</div>
+
+{% if form.is_valid %}
+    <!-- Check if there is data to display -->
+    {% if labels %}
+    <div class="card">
+        <h3>إحصائية من تاريخ  {{ form.cleaned_data.start_date }} إلى تاريخ  {{ form.cleaned_data.end_date }}</h3>
+        <div class="stats-container">
+            <p><span class="square green-i"> </span>إجمالي الدخل : $ {{ total_income|floatformat:2 }}</p>
+            <p><span class="square orange-i"> </span>إجمالي الربح : $ {{ total_revenue|floatformat:2 }}</p>
+            <p><span class="square purple-i"> </span>إجمالي المبيعات : {{ total_products_sold }}</p>
+            <p><span class="square most-sold-i"> </span>المنتج الأكثر مبيعاً : {{ most_sold_product.product__name }} ({{ most_sold_product.total_sold }} قطعة)</p>
+        </div>
+        <canvas id="salesChart"></canvas>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const salesChart = new Chart(ctx, {
+            type: 'bar', // You can change this to 'line' 'bar', 'pie', etc.
+            data: {
+                labels: {{ labels|safe }},
+                datasets: [
+                    {
+                        label: 'الدخل',
+                        data: {{ income_over_time|safe }},
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                    },
+                    {
+                        label: 'عدد القطع المباعة',
+                        data: {{ products_sold_over_time|safe }},
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                    },
+                    {
+                        label: 'الأرباح',
+                        data: {{ revenue_over_time|safe }},
+                        borderColor: 'rgba(255, 111, 0, 1)',
+                        backgroundColor: 'rgba(255, 111, 0, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: false,
+                        text: 'Sales Over Time'
+                    }
+                }
+            }
+        });
+    </script>
+    {% else %}
+        <!-- Display a message if there is no data -->
+        <div class="card">
+            <p>لا توجد بيانات لعرضها في الفترة المحددة.</p>
+        </div>
+    {% endif %}
+{% endif %}
+{% endblock %}
+
+

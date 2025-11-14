@@ -1,0 +1,13 @@
+@ clean the code and make sure everything is working just fine.
+@ view only the latest 20 sales and not all the data at once
+@ add percentage on each product
+
+
+find a way to insert the products easily 
+financial accounts with companies 
+connect the printer to the system 
+
+deleting a product is removing all the sales related to it (you can activate and deactivate the products instead)
+remove the delete buttons from the table
+add success messages 
+

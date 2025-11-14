@@ -1,0 +1,18 @@
+[
+    {
+        "model": "store.settings",
+        "pk": 1,
+        "fields": {
+            "key": "dollar_rate",
+            "value": "15000"
+        }
+    },
+    {
+        "model": "store.settings",
+        "pk": 2,
+        "fields": {
+            "key": "minimum",
+            "value": "10"
+        }
+    }
+]

@@ -1,0 +1,38 @@
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block; /* Make the label block-level */
+    margin-bottom: 5px; /* Add space between label and input */
+}
+.form-group input {
+    width: 100%; /* Make inputs full width */
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+
+.square{
+    padding:0 10px ;
+    margin: 8px;
+}
+
+.orange-i{
+    border: 3px rgba(255, 111, 0, 1) solid;
+    background-color: rgba(255, 111, 0, 0.2);
+}
+
+.green-i{
+    border: 3px rgba(75, 192, 192, 1) solid;
+    background-color: rgba(75, 192, 192, 0.2);
+}
+
+.purple-i{
+    border: 3px rgba(153, 102, 255, 1) solid;
+    background-color: rgba(153, 102, 255, 0.2);
+}
+
+.most-sold-i{
+    border: 3px rgb(218, 0, 178) solid;
+    background-color: rgba(218, 0, 178, 0.2);
+}

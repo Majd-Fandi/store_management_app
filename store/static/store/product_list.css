@@ -1,0 +1,127 @@
+/* Container for all product cards */
+.product-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Responsive grid */
+  gap: 1rem; 
+  padding-top: 0.5rem;
+}
+
+/* Individual product card */
+.product-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px; 
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height:250px;
+}
+
+/* Hover effect for product card */
+.product-card:hover {
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.25); /* Enhanced shadow on hover */
+}
+
+/* Product name */
+.product-card h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #3e3e3e;
+  margin-bottom: 0.5rem;
+}
+
+
+/* Product description */
+.product-card .description {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  border: 1px dashed #e0e0e0; /* Dashed border for description */
+  border-radius: 4px;
+  max-height: 80px; /* Limit height */
+  overflow-y: auto; /* Add scroll if content overflows */
+}
+
+/* Price and quantity details */
+.product-card p {
+  font-size: 0.9rem;
+  color: #444;
+}
+
+/* Price styling */
+.product-card p strong {
+  color: #333;
+}
+
+/* Quantity indicator */
+.low-quantity,
+.high-quantity {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Low quantity style */
+.low-quantity {
+  background-color: #ffebee; /* Light red background */
+  color: #c62828; /* Dark red text */
+}
+
+/* High quantity style */
+.high-quantity {
+  background-color: #e8f5e9; /* Light green background */
+  color: #2e7d32; /* Dark green text */
+}
+
+/* Link styling */
+.product-card a {
+  text-decoration: none; /* Remove underline */
+  color: inherit; /* Inherit text color */
+}
+
+
+.search-bar {
+  margin-bottom: 20px;
+}
+
+.classification,.no-classification{
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.classification{
+  background-color: #e8f5e9; /* Light green background */
+  color: #2e7d32; /* Dark green text */
+}
+
+.no-classification{
+  background-color: #e9e9e9; /* Light red background */
+  color: #616161; /* Dark red text */
+}
+
+
+
+.out-of-stock .product-card {
+  opacity: 0.6;
+  background-color: #f5f5f5;
+  filter: grayscale(80%);
+  position: relative;
+}
+
+.out-of-stock .product-card::after {
+  content: "غير متوفر";
+  position: absolute;
+  top: 16px;
+  left: 42px;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px 0 5px 0;
+}
