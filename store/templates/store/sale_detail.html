@@ -9,6 +9,8 @@
 <p><strong>تاريخ عملية البيع :</strong> {{ sale.date|date:"Y/m/d"  }}</p>
 <a href="{% url 'list_sales' %}">العودة إلى قائمة المبيعات</a>
 
+
+
 <table class="sales-detail-table">
     <thead>
         <tr>
@@ -23,13 +25,13 @@
     <tbody>
         {% for item in sale_items %}
         <tr>
-                <td>{{ item.product.name }}</td>
-                <td>{{ item.quantity }}</td>
-                <td>{{ item.price_per_item }}</td>
-                <td>{{ item.dollar_rate_at_sale|floatformat:0|intcomma }}</td>
-                <td>{{ item.total_price }}</td>
-                <td>{{ item.total_syp_price|floatformat:0|intcomma }}</td>
-            </tr>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.price_per_item }}</td>
+            <td>{{ item.dollar_rate_at_sale|floatformat:0|intcomma }}</td>
+            <td>{{ item.total_price }}</td>
+            <td>{{ item.total_syp_price|floatformat:0|intcomma }}</td>
+        </tr>
         {% endfor %}
         <tr>
             <td colspan="4" style="text-align:center">المجموع</td>
@@ -39,5 +41,69 @@
     </tbody>
 </table>
 
+<button type="button" class="btn red" id="open-delete-modal">حذف عملية البيع</button>
+
+<div id="delete-modal" class="modal-1">
+    <div class="modal-1-content">
+        <p>هل تريد حذف عملية البيع ؟</p>
+        <div class="modal-1-actions">
+            <a id="confirm-delete" href="{% url 'remove_sale' sale.id %}">
+                <button class="btn red">حذف</button>
+            </a>
+            <button type="button" class="btn gray" id="cancel-delete">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<style>
+
+    /* Modal Styles */
+    .modal-1 {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-1-content {
+        background-color: white;
+        border-radius:8px;
+        margin: 20% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 250px;
+        text-align: center;
+    }
+    .modal-1-actions {
+        margin-top: 20px;
+    }
+</style>
+
+<script>
+    // Delete Confirmation Modal Logic
+    const modal = document.getElementById('delete-modal');
+    const openBtn = document.getElementById('open-delete-modal');
+    const cancelBtn = document.getElementById('cancel-delete');
+
+    // Add event listener to the single delete button
+    openBtn.addEventListener('click', () => {
+        modal.style.display = 'block';
+    });
+
+    // Cancel button event
+    cancelBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+</script>
 
 {% endblock %}

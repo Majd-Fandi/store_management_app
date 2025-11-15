@@ -42,8 +42,8 @@ def product_list(request):
 
 
     # Fetch all products initially
-    products = Product.objects.all()
-
+    # products = Product.objects.all()
+    products = Product.objects.filter(is_active=True)
     # Fetch all classifications 
     classifications = Classification.objects.all()
 
@@ -124,10 +124,6 @@ def remove_classification(request, classification_id):
 # =======================================================================================
 # =======================================================================================
 
-
-from django.shortcuts import render, redirect
-# Assuming Classification and Product are imported from your models
-# from .models import Classification, Product 
 
 def add_product(request):
     if request.method == "POST":
@@ -287,7 +283,8 @@ def add_classification(request):
 
 def remove_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    product.delete()
+    # product.delete()
+    product.safe_delete()
     return redirect('home')
 
 
@@ -329,7 +326,8 @@ def sell_product(request):
         products = Product.objects.filter(id__in=selected_ids)
     else:
         # If no IDs are selected, fetch all products
-        products = Product.objects.all()
+        # products = Product.objects.all()
+        products = Product.objects.filter(is_active=True)
 
     dollar_rate = Settings.objects.filter(key='dollar_rate').first().value
 
@@ -561,91 +559,235 @@ def product_detail(request, product_id):
 # =======================================================================================
 # =======================================================================================
 
+
+from datetime import datetime
+from io import BytesIO
+from django.db.models import Sum
+from django.http import HttpResponse
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
+
 def generate_pdf(request):
     if request.method == 'POST':
-        month = request.POST.get('month')
-        year = request.POST.get('year')
-        sales_data = []
-        
-        # Fetch sales data for the selected month and year
-        sales = Sale.objects.filter(date__year=year, date__month=month)
+        start_date_str = request.POST.get('start_date')
+        end_date_str = request.POST.get('end_date')
 
-        # Add the sale detail for each sale
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        except (TypeError, ValueError):
+            return HttpResponse("Invalid dates", status=400)
+
+        # 1. SALES DATA PROCESSING (Unchanged from your code)
+        sales_data = []
+        sales = Sale.objects.filter(date__range=(start_date, end_date)).order_by('date')
+        
+        total_sell_sum = 0
+        total_buy_sum = 0
+        total_profit_sum = 0
+        total_quantity_sum = 0
+
         for sale in sales:
-            total_items = SaleItem.objects.filter(sale=sale).aggregate(total=Sum('quantity'))['total'] or 0
-            total_price = sum(item.price_at_sale * item.quantity for item in SaleItem.objects.filter(sale=sale))
-            total_price_syp = sum(item.price_at_sale * item.quantity * item.dollar_rate_at_sale for item in SaleItem.objects.filter(sale=sale))
-            sales_data.append({
+            items = SaleItem.objects.filter(sale=sale)
+
+            total_items = items.aggregate(total=Sum('quantity'))['total'] or 0
+
+            total_sell_price_syp = 0
+            total_buy_price_syp = 0
+
+            for item in items:
+                sell_price_syp = item.price_at_sale * item.quantity * item.dollar_rate_at_sale
+                buy_price_syp = item.product.price * item.quantity * item.dollar_rate_at_sale
+
+                total_sell_price_syp += sell_price_syp
+                total_buy_price_syp += buy_price_syp
+
+            profit = total_sell_price_syp - total_buy_price_syp
+
+            data = {
                 'sale_id': sale.id,
                 'date': sale.date.strftime("%Y-%m-%d"),
                 'total_items': total_items,
-                'total_price': total_price,
-                'total_price_syp': total_price_syp
-            })
+                'total_price_sell_syp': total_sell_price_syp,
+                'total_price_buy_syp': total_buy_price_syp,
+                'total_profit': profit,
+            }
+            sales_data.append(data)
 
-        # Create a PDF response
+            total_sell_sum += data['total_price_sell_syp']
+            total_buy_sum += data['total_price_buy_syp']
+            total_profit_sum += data['total_profit']
+            total_quantity_sum += data['total_items']
+            
+
+
+        # 4. PREPARE PDF RESPONSE (Modified)
         response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="sales_{year}_{month}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="Sales Report ( {start_date} to {end_date} ).pdf"'
 
-        # Create PDF
         buffer = BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
+        elements = []
+        styles = getSampleStyleSheet()
+
+        # Title
+        title_text = f"Sales Report: {start_date} to {end_date}"
+        title = Paragraph(title_text, styles['Title'])
+        elements.append(title)
+        elements.append(Spacer(1, 12))
         
-        # Create a table for sales data
-        table_data = [['Sale ID', 'Date', 'Total Items', 'Total Price', 'Total Price (SYP)']]
-        
-        # Check if sales_data is empty
-        if len(sales_data) == 0:
-            table_data.append(['-', '-', '-', '-', '-'])  # Append a row with "No sales" message
+        # Sales Table Title
+        sales_title = Paragraph("Sales Summary", styles['h2'])
+        elements.append(sales_title)
+
+        # Sales Table Data (Table 1)
+        sales_table_data = [['Sale ID', 'Date', 'Total Items', 'Total Price (Sell)', 'Total Price (Buy)', 'Profit (Gross)']]
+
+        if not sales_data:
+            sales_table_data.append(['No Sales Found', '', '', '', '', ''])
         else:
-            total_price_sum = 0
-            total_price_syp_sum = 0
-            
             for data in sales_data:
-                table_data.append([
+                sales_table_data.append([
                     data['sale_id'],
                     data['date'],
                     data['total_items'],
-                    f"{data['total_price']:.2f}",  # Format total price to 2 decimal places
-                    f"{format_number_with_commas(data['total_price_syp'])}"
+                    f"{data['total_price_sell_syp']:,.0f}",
+                    f"{data['total_price_buy_syp']:,.0f}",
+                    f"{data['total_profit']:,.0f}",
                 ])
-                total_price_sum += data['total_price']
-                total_price_syp_sum += data['total_price_syp']
 
-            # Append the totals row
-            table_data.append([
-                '',
-                '',
-                '',
-                f"{total_price_sum:.2f}",  # Total price formatted to 2 decimal places
-                f"{format_number_with_commas(total_price_syp_sum)}"  # Total price in SYP as an integer
+            # Add totals row
+            sales_table_data.append([
+                Paragraph("<b>TOTAL</b>", styles['Normal']), '',
+                f"{total_quantity_sum}",
+                f"{total_sell_sum:,.0f}",
+                f"{total_buy_sum:,.0f}",
+                f"{total_profit_sum:,.0f}",
             ])
 
-        # Create a title for the report
-        styles = getSampleStyleSheet()
-        title = Paragraph(f'Sales Report for Month: {month} - Year: {year}', styles['Title'])
+        sales_table = Table(sales_table_data, colWidths=[60, 60, 60, 100, 100, 100])
 
-        # Create the table
-        table = Table(table_data)
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        # Sales Table Styling (Unchanged)
+        sales_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1E3A8A")),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTSIZE', (0, 0), (-1, 0), 10), # Reduced font size for better fit
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('TOPPADDING', (0, 0), (-1, 0), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 9), # Reduced font size for better fit
+            ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.white, colors.HexColor("#F8FAFC")]),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#D1D5DB")),
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor("#F3F4F6")),
+            ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+            ('ALIGN', (0, -1), (1, -1), 'LEFT'),
+            ('BACKGROUND', (-1, -1), (-1, -1), colors.HexColor("#DCFCE7")),
+            ('TEXTCOLOR', (-1, -1), (-1, -1), colors.HexColor("#166534")),
+            ('SPAN', (0, -1), (1, -1)),
         ]))
+        
+        elements.append(sales_table)
+        elements.append(Spacer(1, 24))
 
         # Build the PDF
-        elements = [title, table]
         doc.build(elements)
-
-        # Get the PDF from the buffer
         pdf = buffer.getvalue()
         buffer.close()
         response.write(pdf)
         return response
+    
+    return HttpResponse("This view only accepts POST requests with date parameters.", status=405)
+
+# def generate_pdf(request):
+#     if request.method == 'POST':
+#         month = request.POST.get('month')
+#         year = request.POST.get('year')
+#         sales_data = []
+        
+#         # Fetch sales data for the selected month and year
+#         sales = Sale.objects.filter(date__year=year, date__month=month)
+
+#         # Add the sale detail for each sale
+#         for sale in sales:
+#             total_items = SaleItem.objects.filter(sale=sale).aggregate(total=Sum('quantity'))['total'] or 0
+#             total_price = sum(item.price_at_sale * item.quantity for item in SaleItem.objects.filter(sale=sale))
+#             total_price_syp = sum(item.price_at_sale * item.quantity * item.dollar_rate_at_sale for item in SaleItem.objects.filter(sale=sale))
+#             sales_data.append({
+#                 'sale_id': sale.id,
+#                 'date': sale.date.strftime("%Y-%m-%d"),
+#                 'total_items': total_items,
+#                 'total_price': total_price,
+#                 'total_price_syp': total_price_syp
+#             })
+
+#         # Create a PDF response
+#         response = HttpResponse(content_type='application/pdf')
+#         response['Content-Disposition'] = f'attachment; filename="sales_{year}_{month}.pdf"'
+
+#         # Create PDF
+#         buffer = BytesIO()
+#         doc = SimpleDocTemplate(buffer, pagesize=letter)
+        
+#         # Create a table for sales data
+#         table_data = [['Sale ID', 'Date', 'Total Items', 'Total Price', 'Total Price (SYP)']]
+        
+#         # Check if sales_data is empty
+#         if len(sales_data) == 0:
+#             table_data.append(['-', '-', '-', '-', '-'])  # Append a row with "No sales" message
+#         else:
+#             total_price_sum = 0
+#             total_price_syp_sum = 0
+            
+#             for data in sales_data:
+#                 table_data.append([
+#                     data['sale_id'],
+#                     data['date'],
+#                     data['total_items'],
+#                     f"{data['total_price']:.2f}",  # Format total price to 2 decimal places
+#                     f"{format_number_with_commas(data['total_price_syp'])}"
+#                 ])
+#                 total_price_sum += data['total_price']
+#                 total_price_syp_sum += data['total_price_syp']
+
+#             # Append the totals row
+#             table_data.append([
+#                 '',
+#                 '',
+#                 '',
+#                 f"{total_price_sum:.2f}",  # Total price formatted to 2 decimal places
+#                 f"{format_number_with_commas(total_price_syp_sum)}"  # Total price in SYP as an integer
+#             ])
+
+#         # Create a title for the report
+#         styles = getSampleStyleSheet()
+#         title = Paragraph(f'Sales Report for Month: {month} - Year: {year}', styles['Title'])
+
+#         # Create the table
+#         table = Table(table_data)
+#         table.setStyle(TableStyle([
+#             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+#             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+#             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+#             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+#             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+#             ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+#             ('GRID', (0, 0), (-1, -1), 1, colors.black),
+#         ]))
+
+#         # Build the PDF
+#         elements = [title, table]
+#         doc.build(elements)
+
+#         # Get the PDF from the buffer
+#         pdf = buffer.getvalue()
+#         buffer.close()
+#         response.write(pdf)
+#         return response
     
 
 # =======================================================================================

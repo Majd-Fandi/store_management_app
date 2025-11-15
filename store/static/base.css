@@ -68,7 +68,7 @@ nav ul li a:hover {
 
 nav ul li a.active {
   font-weight: bold;
-  color: #006eb3; /* Changed: New primary blue */
+  color: #0f7ec3; /* Changed: New primary blue */
   background-color: #4c4d4f14;
   border-radius: 4px;
 }

@@ -7,7 +7,7 @@ table {
 }
 
 th, td {
-    padding: 12px;
+    padding: 8px;
     border: 1px solid #ddd;
 }
 
@@ -17,7 +17,7 @@ thead {
 }
 
 th {
-    background-color: #4c84af; /* Green background for headers */
+    background-color: #1f6093; /* Green background for headers */
     color: white;
 }
 

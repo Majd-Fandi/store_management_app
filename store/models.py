@@ -25,13 +25,24 @@ class Product(models.Model):
     retail_sale_percent = models.PositiveIntegerField(null=True, blank=True)
     whole_sale_percent = models.PositiveIntegerField(null=True, blank=True)
 
+    is_active = models.BooleanField(default=True)
+
     def __str__(self):
         return self.name
     
     def syp_price(self):
         dollar_rate = Settings.objects.get(key="dollar_rate").value 
         return int(self.price * dollar_rate)
-
+    
+    def safe_delete(self):
+        if SaleItem.objects.filter(product=self).exists():
+            self.is_active = False
+            self.save()
+            return f"{self.name} marked as discontinued"
+        else:
+            self.delete()
+            return f"{self.name} completely deleted"
+        
 # ======================================================================
 # ======================================================================
 # ======================================================================

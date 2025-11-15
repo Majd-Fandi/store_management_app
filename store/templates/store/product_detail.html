@@ -93,7 +93,8 @@
     <!-- Delete Confirmation Modal -->
     <div id="delete-modal" class="modal">
         <div class="modal-content">
-            <p>حذف المنتج سيؤدي إلى حذف كل عمليات البيع المتعلقة به !</p>
+            {% comment %} <p>حذف المنتج سيؤدي إلى حذف كل عمليات البيع المتعلقة به !</p> {% endcomment %}
+             <p>لن يتم حذف عمليات البيع الخاصة بالمنتج في حال وجودها , هل تريد حذف المنتج ؟</p>
             <div class="modal-actions">
                 <button class="btn red">
                     <a href="{% url 'remove_product' product_id %}">حذف</a>

@@ -12,8 +12,7 @@
     <input type="date" id="end_date" name="end_date">
     
     <button type="submit" class="btn blue">تصفية</button>
-    <!-- Button to Open the Modal -->
-<button type="button" class="btn special_blue" onclick="openModal()">
+    <button type="button" class="btn special_blue" onclick="openModal()">
     إنشاء تقرير
 </button>
 <button type="button" class="btn green">
@@ -28,9 +27,6 @@
     <input type="date" id="single_date" name="single_date">
     <button type="submit" class="btn blue">تصفية</button>
     <button type="button" class="btn gray" id="clearSearch">إلغاء البحث</button>
-    {% comment %} <a style="color:red" href="{% url 'remove_all_sales' %}">
-        <button type='button' class='btn red'>حذف سجل المبيعات</button>
-    </a> {% endcomment %}
 </form>
 <p style="text-align:center; "><strong>{{sales_message}}</strong></p>
 
@@ -42,7 +38,7 @@
             <th>إجمالي العناصر</th>
             <th>إجمالي السعر</th>
             <th>إجمالي السعر بالليرة</th>
-            <th colspan='2' style="text-align:center">الإجراءات</th>
+            <th style="text-align:center">الإجراءات</th>
         </tr>
     </thead>
     <tbody>
@@ -54,7 +50,6 @@
                 <td>{{ data.total_price }}</td>
                 <td>{{ data.total_price_syp|floatformat:0|intcomma }}</td>
                 <td><a href="{% url 'sale_detail' data.sale.id %}">عرض التفاصيل</a></td>
-                <td><a style="color:red" href="{% url 'remove_sale' data.sale.id %}">حذف</a></td>
             </tr>
         {% empty %}
             <tr>
@@ -64,9 +59,30 @@
     </tbody>
 </table>
 
-
-<!-- Modal Structure -->
 <div id="salesModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5>اختر الفترة :</h5>
+      <span class="close" onclick="closeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form id="salesForm" method="POST" action="{% url 'generate_pdf' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="start_date">من تاريخ :</label>
+          <input type="date" id="start_date" name="start_date" required>
+        </div>
+        <div class="form-group">
+          <label for="end_date">إلى تاريخ :</label>
+          <input type="date" id="end_date" name="end_date" required>
+        </div>
+        <button type="submit" class="btn green">إنشاء تقرير</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% comment %} <div id="salesModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
             <h5>اختر السنة و الشهر :</h5>
@@ -76,7 +92,6 @@
             <form id="salesForm" method="POST" action="{% url 'generate_pdf'%}">
                 {% csrf_token %}
                 <div class="form-group">
-                    {% comment %} <label for="month">الشهر : </label> {% endcomment %}
                     <select class="form-control" id="month" name="month">
                         {% for month in months %}
                             <option value="{{ month.0 }}">{{ month.1 }}</option>
@@ -84,40 +99,38 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    {% comment %} <label for="year">السنة : </label> {% endcomment %}
                     <input type="number" class="form-control" id="year" name="year" value="{{ current_year }}" required>
                 </div>
                 <button type="submit" class="btn green">جرد </button>
             </form>
         </div>
     </div>
-</div>
-
-
+</div> {% endcomment %}
 
 <script>
-    // Function to open the modal
+    // All Delete Confirmation Modal Logic has been removed
+
+    // Report Modal Functions
     function openModal() {
         document.getElementById("salesModal").style.display = "block";
     }
 
-    // Function to close the modal
     function closeModal() {
         document.getElementById("salesModal").style.display = "none";
     }
 
-    // Close the modal when clicking outside of it
+    // Close report modal when clicking outside
     window.onclick = function(event) {
-        const modal = document.getElementById("salesModal");
-        if (event.target === modal) {
+        const reportModal = document.getElementById("salesModal");
+        if (event.target === reportModal) {
             closeModal();
         }
     }
+
+    // Clear search functionality
+    document.getElementById('clearSearch').addEventListener('click', function () {
+        window.location.href = window.location.pathname;
+    });
 </script>
 
-<script>
-    document.getElementById('clearSearch').addEventListener('click', function () {
-    window.location.href = window.location.pathname;
-    });
-  </script>
 {% endblock %}
