@@ -59,7 +59,8 @@
   </div>
 
   <button type="submit" class="btn blue">إضافة</button>
-  <a class="btn green" style="font-size:small" href={% url 'import_products' %}>استيراد من Excel</a>
+  {% comment %} <a class="btn green" style="font-size:small" href={% url 'import_products' %}>استيراد من Excel</a> {% endcomment %}
+  <a class="btn green" style="font-size:small" href={% url 'insert_products' %}>قائمة إضافة</a>
   
   <br>
   <p class="error">

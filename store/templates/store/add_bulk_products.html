@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'store/insert_products.css' %}">
+
+
+
+<div class="form-container">
+
+    <h2 class="form-title">إضافة منتجات جديدة</h2>
+    <form method="POST">
+        {% csrf_token %}
+        
+        {{ formset.management_form }}
+
+        <div class="table-wrapper">
+            <table class="formset-table" id="product-formset-table">
+                <thead>
+                    <tr>
+                        <th>المادة</th>
+                        <th>السعر $ </th>
+                        <th>الكمية</th>
+                        <th>التصنيف</th>
+                        <th>ربح المفرق % </th>
+                        <th>ربح الجملة % </th>
+                        {% comment %} <th>الوصف</th> {% endcomment %}
+                        <th>تجاهل</th>
+                    </tr>
+                </thead>
+                <tbody id="formset-body">
+                    {% for form in formset %}
+                        <tr class="product-form">
+                            <td data-label="المادة">{{ form.name.errors }}{{ form.name }}</td>
+                            <td data-label="السعر">{{ form.price.errors }}{{ form.price }}</td>
+                            <td data-label="الكمية">{{ form.quantity.errors }}{{ form.quantity }}</td>
+                            <td data-label="التصنيف">{{ form.classification.errors }}{{ form.classification }}</td>
+                            <td data-label="% ربح التجزئة">{{ form.retail_sale_percent.errors }}{{ form.retail_sale_percent }}</td>
+                            <td data-label="% ربح الجملة">{{ form.whole_sale_percent.errors }}{{ form.whole_sale_percent }}</td>
+                            {% comment %} <td data-label="الوصف">{{ form.description.errors }}{{ form.description }}</td> {% endcomment %}
+                            <td class="delete-checkbox-cell">{{ form.DELETE }}</td> 
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <br>
+        <div class="form-buttons">
+            <button type="button" id="add-row-btn" class="btn blue"><span class="plus-sign">+</span> إضافة المزيد</button>
+            <button type="submit" class="btn green">حفظ المنتجات</button>
+        </div>
+    </form>
+
+</div> 
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        const addRowBtn = document.getElementById("add-row-btn");
+        const formsetBody = document.getElementById("formset-body");
+        const formsetPrefix = "{{ formset.prefix }}"; 
+        const totalFormsInput = document.getElementById(`id_${formsetPrefix}-TOTAL_FORMS`);
+
+        // --- 1. كود إضافة الصف (مُعدل) ---
+        addRowBtn.addEventListener("click", function() {
+            const lastRow = formsetBody.querySelector(".product-form:last-child");
+            const newRow = lastRow.cloneNode(true); 
+
+            let currentFormCount = parseInt(totalFormsInput.value);
+            
+            newRow.querySelectorAll("input, select, textarea").forEach(function(element) {
+                const nameRegex = new RegExp(`${formsetPrefix}-(\\d+)-`);
+                element.name = element.name.replace(nameRegex, `${formsetPrefix}-${currentFormCount}-`);
+
+                const idRegex = new RegExp(`id_${formsetPrefix}-(\\d+)-`);
+                element.id = element.id.replace(idRegex, `id_${formsetPrefix}-${currentFormCount}-`);
+                
+                // --- هذا هو التعديل لإصلاح مشكلة القيم الافتراضية ---
+                const nameAttr = element.getAttribute('name');
+
+                if (nameAttr && nameAttr.endsWith('-retail_sale_percent')) {
+                    element.value = 5; // ★ تعيين القيمة الافتراضية
+                } else if (nameAttr && nameAttr.endsWith('-whole_sale_percent')) {
+                    element.value = 3; // ★ تعيين القيمة الافتراضية
+                } else if (element.tagName === "SELECT") {
+                    element.selectedIndex = 0; // إعادة تعيين القائمة المنسدلة
+                } else if (element.type === 'checkbox') {
+                    element.checked = false; // إلغاء تحديد مربع الحذف
+                } else {
+                    element.value = ""; // مسح باقي الحقول
+                }
+                // --- نهاية التعديل ---
+            });
+            
+            // إزالة أي علامات خطأ من الصف المنسوخ
+            newRow.querySelectorAll(".errorlist").forEach(e => e.remove());
+            // إزالة كلاس الحذف (اختياري)
+            newRow.classList.remove('marked-for-deletion');
+
+            formsetBody.appendChild(newRow);
+            totalFormsInput.value = currentFormCount + 1;
+        });
+
+        // --- 2. كود تمييز الصف عند الحذف (اختياري) ---
+        // استخدام "Event Delegation" ليعمل على الصفوف الجديدة أيضاً
+        formsetBody.addEventListener('change', function(e) {
+            // التحقق إذا كان العنصر هو مربع الحذف
+            if (e.target && e.target.getAttribute('name') && e.target.getAttribute('name').endsWith('-DELETE')) {
+                const row = e.target.closest('tr');
+                if (e.target.checked) {
+                    row.classList.add('marked-for-deletion');
+                } else {
+                    row.classList.remove('marked-for-deletion');
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}

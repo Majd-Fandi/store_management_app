@@ -24,6 +24,7 @@ urlpatterns = [
     path('settings', views.settings_view, name='settings'),
     
     path('import-products/', views.import_products, name='import_products'),
+    path('insert-products/', views.add_bulk_products, name='insert_products'),
     path('sales-statistics/', views.sales_statistics, name='sales_statistics'),
 
     path('offline/', TemplateView.as_view(template_name='offline.html')),

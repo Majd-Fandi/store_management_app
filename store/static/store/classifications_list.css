@@ -1,22 +1,140 @@
-.classification-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
 
-.classification-table th,
-.classification-table td {
-    padding: 12px;
-    text-align: right;
-    border-bottom: 1px solid #ddd;
-}
+    .modal-content {
+        background-color: white;
+        border-radius: 8px;
+        margin: 20% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 250px;
+        text-align: center;
+    }
 
-.classification-table th {
-    background-color: #f8f9fa;
-    font-weight: bold;
-    color: #555;
-}
+    .modal-actions {
+        margin-top: 20px;
+    }
 
-.classification-table tbody tr:hover {
-    background-color: #f1f1f1;
-}
+
+    .classification-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 30px auto;
+        border: 1px solid #dee2e6;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .classification-table th,
+    .classification-table td {
+        padding: 12px 15px;
+        text-align: right;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+    }
+
+    .classification-table th {
+        background-color: #1f6093;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        border-bottom: 2px solid #0056b3;
+    }
+
+    /* تنسيق رأس الصنف القابل للنقر */
+    .classification-header {
+        cursor: pointer;
+        background-color: #ffffff;
+        transition: background-color 0.2s;
+    }
+
+    .classification-header:hover {
+        background-color: #f0f0f0;
+    }
+
+    .classification-header.expanded {
+        background-color: #e2f0ff;
+        border-bottom: 1px solid #cce5ff;
+    }
+
+    /* تنسيق صف التفاصيل المخفي (الحل لمشكلة العرض الأولي) */
+    .product-details-row {
+        background-color: #fcfcfc;
+        border: none;
+        /* ★ هذا السطر يضمن الإخفاء الأولي */
+        display: none;
+    }
+
+    .product-details-row td {
+        padding: 0;
+        border: none;
+    }
+
+    .product-details-content {
+        padding: 15px 30px 20px 30px;
+    }
+
+    /* أيقونة التوسيع/الطي */
+    .expand-icon {
+        margin-right: 15px;
+        font-size: 0.8em;
+        color: #007bff;
+        display: inline-block;
+        transition: transform 0.2s;
+        font-weight: bold;
+        line-height: 1.5;
+    }
+
+    .classification-header.expanded .expand-icon {
+        transform: rotate(90deg);
+    }
+
+    /* ======================================= */
+    /* تنسيق الجدول الفرعي والأزرار */
+    /* ======================================= */
+    .products-subtable {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 0.9em;
+        background-color: white;
+        border: 1px solid #eee;
+    }
+
+    .products-subtable th {
+        background-color: #f4f4f4;
+        padding: 10px;
+        color: #444;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .products-subtable td {
+        padding: 8px 10px;
+        color: #333;
+    }
+
+    .no-products {
+        text-align: center;
+        color: #6c757d;
+        padding: 15px 0;
+    }
+
+    .btn-add-classification {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        border-radius: 50%;
+        color: white;
+        margin: 10px 0;
+        text-decoration: none;
+    }

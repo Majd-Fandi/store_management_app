@@ -1,0 +1,184 @@
+/* --- 1. حاوية الصفحة الرئيسية --- */
+.form-container {
+    max-width: 1400px;
+    margin: 30px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.form-title {
+    /* text-align: center; */
+    color: #333;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+/* --- 2. تنسيق الجدول --- */
+
+/* حاوية الجدول للسماح بالتمرير الأفقي على الشاشات الصغيرة */
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* لتحسين التمرير على iOS */
+}
+
+.formset-table {
+    width: 100%;
+    min-width: 900px;
+    /* يمنع الجدول من الانضغاط أكثر من اللازم */
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    /* border-radius: 8px; */
+    overflow: hidden;
+    /* لإخفاء الزوايا الحادة للجدول */
+}
+
+.formset-table thead th {
+    background-color: #1f6093;
+    color: #ffffff;
+    padding: 15px 12px;
+    text-align: right;
+    /* مناسب للغة العربية */
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.formset-table tbody tr {
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* .formset-table tbody tr:nth-child(even) {
+    background-color: #fdfdfd; 
+} */
+
+/* .formset-table tbody tr:hover {
+    background-color: #f1f3f5;
+} */
+
+.formset-table tbody td {
+    padding: 0 8px;
+    vertical-align: top;
+    /* لجعل حقول الوصف والأخطاء تبدأ من الأعلى */
+}
+
+
+.delete-checkbox-cell {
+    text-align: center;
+    /* vertical-align: middle; */
+}
+
+.delete-checkbox-cell input[type="checkbox"] {
+    width: 24px;
+    /* transform: scale(1.3); */
+    cursor: pointer;
+}
+
+/* --- 4. تنسيق أخطاء دجانغو --- */
+.errorlist {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 0 0;
+    color: #dc3545;
+    /* لون أحمر واضح للخطأ */
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.errorlist li {
+    padding: 2px 0;
+}
+
+/* --- 5. تنسيق الأزرار --- */
+.form-buttons {
+    display: flex;
+    justify-content: flex-start;
+    /* الأزرار تبدأ من اليمين في RTL */
+    gap: 12px;
+    /* مسافة بين الأزرار */
+    margin-top: 20px;
+}
+
+
+
+/* --- 6. تنسيق للشاشات الصغيرة (Mobile) --- */
+@media (max-width: 768px) {
+    .form-container {
+        padding: 15px;
+        margin: 15px;
+    }
+
+    h2 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    /* لجعل الجدول يعمل على الموبايل، نلغي تنسيق الجدول
+      ونعرضه كـ "بطاقات" لكل صف
+    */
+    .formset-table thead {
+        /* إخفاء رأس الجدول */
+        display: none;
+    }
+
+    .formset-table tr {
+        display: block;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .formset-table td {
+        display: block;
+        text-align: right;
+        /* محاذاة النص يمين */
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .formset-table td:last-child {
+        border-bottom: none;
+    }
+
+    /* إضافة عنوان الحقل قبل المحتوى باستخدام data-label */
+    .formset-table td::before {
+        content: attr(data-label);
+        float: right;
+        /* محاذاة العنوان يمين */
+        font-weight: 600;
+        margin-left: 15px;
+        color: #555;
+    }
+
+    .delete-checkbox-cell {
+        text-align: right;
+        /* تعديل المحاذاة */
+    }
+
+    .form-buttons {
+        flex-direction: column;
+        /* الأزرار تحت بعض */
+        width: 100%;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+.plus-sign {
+    margin-left: 4px;
+}
+
+/* اختياري: لجعل الصف المحذوف يظهر بلون باهت */
+.product-form.marked-for-deletion {
+    opacity: 0.5;
+    background-color: #f62234;
+}

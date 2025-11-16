@@ -93,12 +93,30 @@ def product_list(request):
 # =======================================================================================
 # =======================================================================================
 
+# def classifications_list(request):
+#     # Fetch all classifications and annotate them with the count of related products and sum of quantities
+#     classifications = Classification.objects.annotate(
+#         product_type_count=Count('product', distinct=True),  # Count distinct products
+#         all_types_count=Sum('product__quantity')  # Sum the quantities of related products
+#     ).order_by('category')
+
+#     return render(
+#         request,
+#         'store/classifications_list.html',
+#         {
+#             'classifications': classifications,
+#         },
+#     )
+
+
+
 def classifications_list(request):
     # Fetch all classifications and annotate them with the count of related products and sum of quantities
+    # نستخدم prefetch_related لتحسين الأداء لاحقاً عند الوصول إلى المنتجات في القالب
     classifications = Classification.objects.annotate(
-        product_type_count=Count('product', distinct=True),  # Count distinct products
-        all_types_count=Sum('product__quantity')  # Sum the quantities of related products
-    ).order_by('category')
+        product_type_count=Count('product', distinct=True),
+        all_types_count=Sum('product__quantity')
+    ).prefetch_related('product_set').order_by('category')
 
     return render(
         request,
@@ -108,7 +126,6 @@ def classifications_list(request):
         },
     )
 
-
 # =======================================================================================
 # =======================================================================================
 # =======================================================================================
@@ -117,7 +134,7 @@ def classifications_list(request):
 def remove_classification(request, classification_id):
     product = get_object_or_404(Classification, id=classification_id)
     product.delete()
-    return redirect('home')
+    return redirect('classifications_list')
 
 # =======================================================================================
 # =======================================================================================
@@ -804,6 +821,8 @@ def custom_404(request, exception=None):
 # =======================================================================================
 # =======================================================================================
 
+
+
 def import_products(request):
     context = {
         'success': False,
@@ -939,3 +958,87 @@ def sales_statistics(request):
 # =======================================================================================
 # =======================================================================================
 # =======================================================================================
+
+from django.forms import formset_factory
+from .forms import ProductBulkAddForm 
+
+# def add_bulk_products(request):
+    
+#     # استخدام النموذج الجديد لإنشاء الـ FormSet
+#     ProductFormSet = formset_factory(ProductBulkAddForm, extra=1) # يمكنك تغيير 5 إلى أي عدد صفوف تريده
+
+#     if request.method == 'POST':
+#         formset = ProductFormSet(request.POST, prefix='products')
+        
+#         if formset.is_valid():
+#             for form in formset:
+#                 # التحقق أن الصف ليس فارغاً
+#                 if form.has_changed() and form.cleaned_data.get('name'):
+                    
+#                     product_name = form.cleaned_data.get('name')
+#                     # هذه هي الكمية المدخلة في النموذج
+#                     quantity_to_add = form.cleaned_data.get('quantity', 0) 
+                    
+#                     try:
+#                         # 1. البحث في قاعدة البيانات
+#                         product = Product.objects.get(name__iexact=product_name)
+                        
+#                         # 2. المنتج موجود: زيادة الكمية فقط
+#                         product.quantity += quantity_to_add
+#                         product.save(update_fields=['quantity'])
+                    
+#                     except Product.DoesNotExist:
+#                         # 3. المنتج غير موجود: إنشاء منتج جديد
+#                         # استدعاء .save() هنا آمن لأنه سيستخدم 
+#                         # دالة .save() الافتراضية (وليس المخصصة)
+#                         new_product = form.save() 
+
+#             # غير 'store:product_list' إلى اسم المسار الصحيح لصفحة قائمة المنتجات
+#             return redirect('product_list') 
+
+#     else:
+#         formset = ProductFormSet(prefix='products')
+
+#     # استخدم نفس القالب المقترح سابقاً
+#     return render(request, 'store/add_bulk_products.html', {'formset': formset})
+
+
+# store/views.py
+
+def add_bulk_products(request):
+    
+    # أضف can_delete=True
+    ProductFormSet = formset_factory(ProductBulkAddForm, extra=1, can_delete=True)
+
+    if request.method == 'POST':
+        formset = ProductFormSet(request.POST, prefix='products')
+        
+        if formset.is_valid():
+            for form in formset:
+                
+                # --- أضف هذا التحقق ---
+                # إذا كان المربع "DELETE" محدداً، تجاهل هذا الصف
+                if form.cleaned_data.get('DELETE'):
+                    continue  # اذهب إلى الصف التالي
+                # --- نهاية التحقق ---
+
+                # التحقق أن الصف ليس فارغاً
+                if form.has_changed() and form.cleaned_data.get('name'):
+                    
+                    product_name = form.cleaned_data.get('name')
+                    quantity_to_add = form.cleaned_data.get('quantity', 0) 
+                    
+                    try:
+                        product = Product.objects.get(name__iexact=product_name)
+                        product.quantity += quantity_to_add
+                        product.save(update_fields=['quantity'])
+                    
+                    except Product.DoesNotExist:
+                        new_product = form.save() 
+
+            return redirect('product_list') 
+
+    else:
+        formset = ProductFormSet(prefix='products')
+
+    return render(request, 'store/add_bulk_products.html', {'formset': formset})

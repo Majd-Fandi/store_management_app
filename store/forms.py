@@ -1,7 +1,59 @@
 from django import forms
-from .models import Product
+from .models import Product,Classification
 from django.utils import timezone
 
+# --- هذا هو النموذج الجديد لصفحة الإضافة المجمعة ---
+class ProductBulkAddForm(forms.ModelForm):
+    
+    # تحويل حقل التصنيف إلى قائمة منسدلة
+    classification = forms.ModelChoiceField(
+        queryset=Classification.objects.all(), 
+        required=False, 
+        label="التصنيف"
+    )
+
+    class Meta:
+        model = Product
+        # لاحظ: لا يوجد 'additional_quantity'
+        fields = [
+            'name', 'price', 'quantity', 'description', 
+            'classification', 'retail_sale_percent', 'whole_sale_percent'
+        ]
+        labels = {
+            'name': 'المادة',
+            'price': 'السعر (التكلفة)',
+            'quantity': 'الكمية',
+            'description': 'الوصف',
+            'retail_sale_percent': 'نسبة ربح التجزئة %',
+            'whole_sale_percent': 'نسبة ربح الجملة %',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'المادة'}),
+            'price': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+            'quantity': forms.NumberInput(attrs={'min': '0'}),
+            'description': forms.Textarea(attrs={'rows': 2, 'placeholder': 'اختياري'}), 
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # وضع القيم الافتراضية للنسب
+        self.fields['retail_sale_percent'].initial = 5
+        self.fields['whole_sale_percent'].initial = 3
+        
+        # جعل الحقول الاختيارية غير مطلوبة
+        self.fields['description'].required = False
+        self.fields['classification'].required = False
+        self.fields['retail_sale_percent'].required = False
+        self.fields['whole_sale_percent'].required = False
+
+    def clean_name(self):
+        # من الجيد دائماً تنظيف الاسم
+        name = self.cleaned_data.get('name')
+        if not name:
+            raise forms.ValidationError('يجب إدخال المادة')
+        return name.strip() # .strip() لإزالة المسافات الزائدة
+    
 class ProductForm(forms.ModelForm):
     description = forms.CharField(
         required=False,  # Make description optional
@@ -32,7 +84,7 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = ['name', 'description', 'price', 'quantity', 'additional_quantity', 'classification','whole_sale_percent','retail_sale_percent']
         widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'اسم المنتج'}),
+            'name': forms.TextInput(attrs={'placeholder': 'المادة'}),
             'price': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
             'quantity': forms.NumberInput(attrs={'min': '0'}),
             'classification': forms.Select(attrs={'placeholder': 'اختر التصنيف'}),  # Add widget for classification
@@ -44,7 +96,7 @@ class ProductForm(forms.ModelForm):
     def clean_name(self):
         name = self.cleaned_data['name']
         if not name:
-            raise forms.ValidationError('يجب إدخال اسم المنتج')
+            raise forms.ValidationError('يجب إدخال المادة')
         return name
 
     def clean_price(self):
