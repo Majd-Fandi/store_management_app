@@ -35,6 +35,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // for the option text value 
     const retailPercentText = document.getElementById('retailPercent');
     const wholePercentText = document.getElementById('wholePercent');
+
+    const clearSearchButton=document.getElementById('clearSearch');
     
     let cart = [];
 
@@ -44,14 +46,17 @@ function clearForm() {
         productSearchInput.value = "";     // Clear the searchable product name
         productSelect.value = 0;           // Reset the hidden product ID to 0
         quantityInput.value = 1;           // Reset quantity to 1 (or clear it, if you prefer null)
-        profitSelect.value = "";          // Reset profit percentage to the default (e.g., 3)
+        productQuantity.textContent="0"
+        profitSelect.value = "3";          // Reset profit percentage to the default (e.g., 3)
         SaleTypeSelect.value = "0";        // Reset sale type to default (مفرق/0)
 
         // 2. Clear displayed price spans to 0.00 or empty
         originalPriceSpan.textContent = "0.00";
         sypPriceSpan.textContent = "0";
+
         profitPriceSpan.textContent = "0.00";
         sypProfitPriceSpan.textContent = "0";
+        
         totalPriceSpan.textContent = "0.00";
         totalSypPriceSpan.textContent = "0";
 
@@ -238,5 +243,6 @@ function clearForm() {
     SaleTypeSelect.addEventListener('change', calculatePrices);
     profitSelect.addEventListener('change', calculatePrices);
     quantityInput.addEventListener('input', calculatePrices);
+    clearSearchButton.addEventListener('click',clearForm);
     calculatePrices();
 });

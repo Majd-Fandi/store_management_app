@@ -144,3 +144,17 @@ p {
   line-height: 1;
   margin: 0 2px;
 }
+
+#clearSearch{
+  color:#2355ba;
+  border-radius: 3px;
+  border: 1px solid #2355ba;
+  cursor: pointer;
+  background-color: white;
+}
+
+#clearSearch:hover{
+  color:white;
+  border: 1px solid #2355ba;
+  background-color: #2355ba;
+}

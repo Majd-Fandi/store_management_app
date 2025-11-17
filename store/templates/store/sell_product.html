@@ -10,6 +10,7 @@
     <form id="addProductForm" class="product-form">
 
     <label class="form-label block-label">المادة :</label>
+    <button style="position:absolute; right:162px; top:137px" type="button" id="clearSearch">C</button>
     <input list="productOptions" name="product_name_display" id="productSearchInput" placeholder="اكتب اسم المادة للبحث..." autocomplete="off">
       
       <input type="hidden" name="product_id" id="productSelect">
@@ -43,8 +44,8 @@
 
       <label class="form-label block-label">نسبة الربح :</label>
       <select name="profit_percentage" id="profitSelect">
-        <option value="" id="retailPercentOption"><span id="retailPercent"><span/></option>
-        <option value="" id="wholePercentOption"><span id="wholePercent"><span/></option>
+        <option value="5" id="retailPercentOption"><span id="retailPercent"><span/></option>
+        <option value="3" id="wholePercentOption"><span id="wholePercent"><span/></option>
       </select>
 
       <div id="profitPrices" class="details-container">
