@@ -45,9 +45,10 @@
         </option>
        {% endfor %}
     </select>
-      <a class="add-classification" href={% url 'add_classification' %}>
+      {% comment %} <a class="add-classification" href={% url 'add_classification' %}>
         +
-      </a>
+      </a> {% endcomment %}
+      <button type="button" id="openModalBtn" class="btn blue">+</button>
     <br>
       <label class="form-label">نسبة الربح % (مفرق) : </label><br>
       <input type="number" step="1"min="1" placeholder="5%" id="retailPercent" name="retail_sale_percent"><br>
@@ -70,6 +71,24 @@
 </form>
 </div>
 </div>
+
+    <div id="classificationList">
+        </div>
+
+    {% include 'store/snippets/classification_modal.html' %} 
+
+    <script>
+        document.addEventListener('classificationAdded', function(e) {
+            // This runs after a classification is successfully inserted
+            console.log('New Classification added:', e.detail.category);
+            
+            
+            // For a simple update, you might just reload the page:
+             window.location.reload(); 
+
+            // For an AJAX update, you'd call a function here to fetch and update the #classificationList content.
+        });
+    </script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

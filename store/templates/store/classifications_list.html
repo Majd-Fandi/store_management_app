@@ -67,17 +67,43 @@
         
         <tr>
             <td colspan="4" style=" text-align: center;">
-                <a href="{% url "add_classification" %}" class="btn-add-classification green">
+                {% comment %} <a href="{% url "add_classification" %}" class="btn-add-classification green">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                         <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                             stroke-miterlimit="10" stroke-width="2" d="M6 12h12m-6 6V6" />
                     </svg>
-                </a>
+                </a> {% endcomment %}
+                 <button id="openModalBtn" class="btn blue">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-miterlimit="10" stroke-width="2" d="M6 12h12m-6 6V6" />
+                    </svg>
+                </button>
             </td>
         </tr>
+        
     </tbody>
 </table>
 
+
+
+    
+    <div id="classificationList">
+        </div>
+
+    {% include 'store/snippets/classification_modal.html' %} 
+
+    <script>
+        document.addEventListener('classificationAdded', function(e) {
+            // This runs after a classification is successfully inserted
+            console.log('New Classification added:', e.detail.category);
+            
+            // For a simple update, you might just reload the page:
+             window.location.reload(); 
+
+            // For an AJAX update, you'd call a function here to fetch and update the #classificationList content.
+        });
+    </script>
 
 <div id="delete-modal" class="modal">
     <div class="modal-content">

@@ -280,17 +280,44 @@ def add_product(request):
 # =======================================================================================
 # =======================================================================================
 
+from django.http import JsonResponse
+
 def add_classification(request):
     if request.method == "POST":
-        category = request.POST['category']
+        category = request.POST.get('category', '').strip()
+
         if category:
             Classification.objects.create(category=category)
+            # If it's an AJAX request (from the modal), return success JSON
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': 'Classification added successfully.'})
+            # Otherwise, for a regular POST, redirect as before
             return redirect('classifications_list')
         else:
+            error_message = 'الرجاء تعبئة الحقول المطلوبة'
+            # For an AJAX request, return failure JSON
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': error_message}, status=400)
+            # Otherwise, render the error in the original page context
             return render(request, 'store/add_classification.html', {
-                'error': 'الرجاء تعبئة الحقول المطلوبة',
+                'error': error_message,
             })
+    
+    # This part remains for displaying the modal content if it needs to be loaded separately, 
+    # but for a simple modal, you'll likely just use the template below.
     return render(request, 'store/add_classification.html')
+
+# def add_classification(request):
+#     if request.method == "POST":
+#         category = request.POST['category']
+#         if category:
+#             Classification.objects.create(category=category)
+#             return redirect('classifications_list')
+#         else:
+#             return render(request, 'store/add_classification.html', {
+#                 'error': 'الرجاء تعبئة الحقول المطلوبة',
+#             })
+#     return render(request, 'store/add_classification.html')
 
 
 # =======================================================================================

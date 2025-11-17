@@ -1,0 +1,163 @@
+<div id="classificationModal" class="modal-custom">
+    <div class="modal-content-custom">
+        <div class="modal-header-custom">
+            <h5 class="modal-title-custom">إضافة صنف جديد</h5>
+            <span id="closeModalBtn" class="close-btn-custom">&times;</span>
+        </div>
+        
+        <form id="addClassificationForm" method="post" action="{% url 'add_classification' %}">
+            {% csrf_token %}
+            <div class="modal-body-custom">
+                <div class="form-group-custom">
+                    <label class="form-label">الصنف :</label>
+                    <input type="text" class="form-control" name="category" required> 
+                    <p class="error-message" id="formError"></p>
+                </div>
+            </div>
+            <div class="modal-footer-custom">
+                <button type="submit" class="btn blue">إضافة</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+/* ---------------------------------------------------- */
+/* CSS for Reusable Modal */
+/* ---------------------------------------------------- */
+
+.modal-custom {
+    display: none; 
+    position: fixed; 
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content-custom {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 400px; /* Reduced width for better modal feel */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header-custom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.close-btn-custom {
+    color: #aaa;
+    float: left; 
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-btn-custom:hover,
+.close-btn-custom:focus {
+    color: #000;
+}
+
+.error-message {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+/* Basic Form/Button Styling (Adjust as per your global CSS) */
+.form-group-custom { margin-bottom: 15px; }
+.form-label { display: block; margin-bottom: 5px; font-weight: bold; }
+.form-control { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+.btn { padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px; }
+.blue { background-color: #007bff; color: white; }
+</style>
+
+<script>
+/* ---------------------------------------------------- */
+/* JavaScript for Reusable Modal (Pure JS) */
+/* ---------------------------------------------------- */
+document.addEventListener('DOMContentLoaded', function() {
+    // --- 1. Modal Control ---
+    const modal = document.getElementById('classificationModal');
+    const openBtn = document.getElementById('openModalBtn'); 
+    const closeBtn = document.getElementById('closeModalBtn');
+    
+    // Check if the necessary trigger button exists before setting handlers
+    if (openBtn && modal) {
+        openBtn.onclick = function() {
+            modal.style.display = 'block';
+        }
+    }
+    
+    if (closeBtn && modal) {
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+    }
+
+    // Close the modal if user clicks outside
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // --- 2. AJAX Form Submission ---
+    const form = document.getElementById('addClassificationForm');
+    const errorDisplay = document.getElementById('formError');
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            errorDisplay.textContent = ''; // Clear previous errors
+            
+            const formData = new FormData(form);
+            const url = form.getAttribute('action');
+            const csrfToken = formData.get('csrfmiddlewaretoken');
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken 
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // For non-200 status codes (like 400), read the error JSON
+                    return response.json().then(data => { throw new Error(data.error || 'Submission failed'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Success: Close modal, reset form
+                console.log(data.message);
+                form.reset(); 
+                modal.style.display = 'none';
+                
+                // OPTIONAL: Broadcast/Dispatch a custom event after success
+                // This allows the page that includes the modal to react (e.g., refresh a list)
+                document.dispatchEvent(new CustomEvent('classificationAdded', { detail: { category: data.category } }));
+            })
+            .catch(error => {
+                // Failure: Display error message
+                errorDisplay.textContent = error.message;
+            });
+        });
+    }
+});
+</script>
