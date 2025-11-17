@@ -44,8 +44,10 @@
 
       <label class="form-label block-label">نسبة الربح :</label>
       <select name="profit_percentage" id="profitSelect">
-        <option value="5" id="retailPercentOption"><span id="retailPercent"><span/></option>
-        <option value="3" id="wholePercentOption"><span id="wholePercent"><span/></option>
+        {% comment %} <option value="5" id="retailPercentOption"><span id="retailPercent"><span/></option>
+        <option value="3" id="wholePercentOption"><span id="wholePercent"><span/></option> {% endcomment %}
+         <option id="retailPercentOption"><span id="retailPercent"><span/></option>
+        <option  id="wholePercentOption"><span id="wholePercent"><span/></option>
       </select>
 
       <div id="profitPrices" class="details-container">
