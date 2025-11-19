@@ -1,0 +1,82 @@
+install python on the client 
+install the requirements : pip install -r requirements.txt 
+set debugging to False in settings.py
+collect static files : py manage.py collectstatic
+install Nginx for windows (stable version) zip file 
+run the script run_server with waitress : py run_server.py 
+
+Configure Nginx (The Web Server) : 
+1- Open your nginx.conf
+2- Add a server block like this:
+
+server {
+    listen 80;
+    server_name localhost;
+
+    # 1. SERVE STATIC FILES HERE
+    # Nginx serves these directly. It never bothers Waitress/Python.
+    location /static/ {
+        # Update this path to point to the 'staticfiles' folder you just created
+        alias "E:/@ My Clients/Tareek Marash/store_management_app/staticfiles/";
+    }
+
+    # 2. PASS EVERYTHING ELSE TO WAITRESS
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+========================================================================
+
+check if nginx is listening (powershell) : netstat -an | findstr "80"
+
+Success: You see TCP 0.0.0.0:80 ... LISTENING. This means something is listening on port 80 (hopefully Nginx).
+
+Failure: You see nothing. Nginx is not running.
+
+========================================================================
+go to the path where nginx.exe exists and run a test (cmd) : .\nginx -t
+
+you must see : test Successful
+========================================================================
+
+start nginx : run "start nginx" command in the nginx.exe path or run the exe file 
+
+stop nginx completely : powershell = > run : taskkill /F /IM nginx.exe
+
+========================================================================
+
+ALTERNATIVE : use WhiteNoise : (nginx is not responsible of static files)
+
+simple nginx config : 
+
+worker_processes 1;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    # We still include this so Nginx knows how to handle data types generally
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    server {
+        listen       80;
+        server_name  localhost;
+
+        # NOTICE: No "location /static/" block anymore.
+        # Everything goes to Waitress.
+        
+        location / {
+            proxy_pass http://127.0.0.1:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+    }
+}
+
+reload nginx : go to it's path and run :  .\nginx -s reload
+
+

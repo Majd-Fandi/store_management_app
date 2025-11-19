@@ -4,15 +4,15 @@
 @ deleting a product is removing all the sales related to it (you can activate and deactivate the products instead)
 @ remove the delete buttons from the table
 @ find a way to insert the products easily 
+@ convert add classification page to a modal from
 
 
 
  
 add success messages 
 add packages insert to insert_products 
-convert add classification page to a modal from
-
 ? change SYP small amount like 25 syp : 11025 => 11000 , 1950 => 2000 , 3200 => 3000
+
 ? financial accounts with companies 
 ? connect the printer to the system 
 

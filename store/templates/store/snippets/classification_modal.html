@@ -9,8 +9,8 @@
             {% csrf_token %}
             <div class="modal-body-custom">
                 <div class="form-group-custom">
-                    <label class="form-label">الصنف :</label>
-                    <input type="text" class="form-control" name="category" required> 
+                    <label class="modal-form-label">الصنف :</label>
+                    <input type="text" class="modal-form-control" name="category" required> 
                     <p class="error-message" id="formError"></p>
                 </div>
             </div>
@@ -79,10 +79,10 @@
 
 /* Basic Form/Button Styling (Adjust as per your global CSS) */
 .form-group-custom { margin-bottom: 15px; }
-.form-label { display: block; margin-bottom: 5px; font-weight: bold; }
-.form-control { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-.btn { padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px; }
-.blue { background-color: #007bff; color: white; }
+.modal-form-label { display: block; margin-bottom: 5px; font-weight: bold; }
+.modal-form-control { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+{% comment %} .btn { padding: 10px 15px; border: none; cursor: pointer; border-radius: 4px; }
+.blue { background-color: #007bff; color: white; } {% endcomment %}
 </style>
 
 <script>

@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const productSearchInput = document.getElementById('productSearchInput');
     const productDatalist = document.getElementById('productOptions');
     // We keep productSelect, but it's now the hidden input for the ID
-    const productSelect = document.getElementById('productSelect');
-
+    const productSelect = document.getElementById('productSelect'); 
+ 
     const SaleTypeSelect = document.getElementById('saleTypeSelect');
     const originalPriceSpan = document.getElementById('originalPrice');
     const sypPriceSpan = document.getElementById('sypPrice');
@@ -26,130 +26,121 @@ document.addEventListener('DOMContentLoaded', function () {
     const cartDataInput = document.getElementById('cartDataInput');
     const cartTotalSypProfitSpan = document.getElementById('cartTotalSypProfit');
     const cartTotalProfitSpan = document.getElementById('cartTotalProfit');
-    const productQuantity = document.getElementById('product_quantity');//tareek
+    const productQuantity= document.getElementById('product_quantity');//tareek
 
     // for the option value 
-    const retailPercentOption = document.getElementById('retailPercentOption');
-    const wholePercentOption = document.getElementById('wholePercentOption');
+    const retailPercentOption=document.getElementById('retailPercentOption');
+    const wholePercentOption=document.getElementById('wholePercentOption');
 
     // for the option text value 
     const retailPercentText = document.getElementById('retailPercent');
     const wholePercentText = document.getElementById('wholePercent');
 
-    const clearSearchButton = document.getElementById('clearSearch');
-
+    const clearSearchButton=document.getElementById('clearSearch');
+    
     let cart = [];
 
-    // ===============================================
-    // UPDATED clearForm Function
-    // ===============================================
-    function clearForm() {
+
+function clearForm() {
         // 1. Reset INPUT values
-        productSearchInput.value = "";    // Clear the searchable product name
-        productSelect.value = 0;          // Reset the hidden product ID to 0
-        quantityInput.value = 1;          // Reset quantity to 1
-        SaleTypeSelect.value = "0";       // Reset sale type to default (مفرق/0)
+        productSearchInput.value = "";     // Clear the searchable product name
+        productSelect.value = 0;           // Reset the hidden product ID to 0
+        quantityInput.value = 1;           // Reset quantity to 1 (or clear it, if you prefer null)
+        productQuantity.textContent="0"
+        // profitSelect.value = "";          // Reset profit percentage to the default (e.g., 3)
+        SaleTypeSelect.value = "0";        // Reset sale type to default (مفرق/0)
 
-        // 2. Reset profit select options (FIX for NaN issue)
-        retailPercentText.textContent = "0 %";
-        wholePercentText.textContent = "0 %";
-        retailPercentOption.value = 0;
-        wholePercentOption.value = 0;
-        profitSelect.value = 0; // Select the '0' value option
+        // 2. Clear displayed price spans to 0.00 or empty
+        originalPriceSpan.textContent = "0.00";
+        sypPriceSpan.textContent = "0";
 
-        // 3. Recalculate all prices based on the new empty state
-        // This will set all price spans to "0.00" or "0"
-        calculatePrices();
+        profitPriceSpan.textContent = "0.00";
+        sypProfitPriceSpan.textContent = "0";
+
+        totalPriceSpan.textContent = "0.00";
+        totalSypPriceSpan.textContent = "0";
+
     }
-
-    // ===============================================
-    // UPDATED calculatePrices Function
-    // ===============================================
+    
     function calculatePrices() {
         const saleType = SaleTypeSelect.value;
+        //  CHANGE: Get the selected value from the search input
         const selectedProductName = productSearchInput.value;
+        //  CHANGE: Find the corresponding option in the datalist
         const selectedOption = productDatalist.querySelector(`option[value="${selectedProductName}"]`);
 
         // Default values for calculations if no product is selected or input is invalid
         let productId = 0;
-        let productName = productSearchInput.placeholder;
+        let productName = productSearchInput.placeholder; // Use placeholder as a fallback name
         let originalPrice = 0;
         let sypPrice = 0;
-        let availableQuantity = 0;
-        let retailPercent = 0;
-        let wholePercent = 0;
+        let availableQuantity = 0; // The max quantity to check against
+        // tareek
+        let retailPercent=0;
+        let wholePercent=0;
 
         if (selectedOption) {
             // Product is selected, extract data attributes
             productId = selectedOption.getAttribute('data-id');
-            productName = selectedProductName;
+            productName = selectedProductName; // The full name from the input
             originalPrice = parseFloat(selectedOption.getAttribute('data-price')) || 0;
             sypPrice = parseFloat(selectedOption.getAttribute('data-syp-price')) || 0;
             availableQuantity = parseInt(selectedOption.getAttribute('data-qty')) || 0;
-            retailPercent = selectedOption.getAttribute('retail-percent');
-            wholePercent = selectedOption.getAttribute('whole-percent');
+            // tareek
+            retailPercent=selectedOption.getAttribute('retail-percent');
+            wholePercent=selectedOption.getAttribute('whole-percent');
 
+            //  IMPORTANT: Set the hidden input value for form submission/cart logic
             productSelect.value = productId;
         } else {
+            // Product is NOT selected, clear the hidden ID
             productSelect.value = 0;
         }
-
+        
         const profitPercentage = parseFloat(profitSelect.value) / 100;
-
-        // --- FIX for Quantity Typing Issue ---
+        
         let quantity = parseInt(quantityInput.value);
-        if (isNaN(quantity) || quantity < 0) {
-            quantity = 0; // Treat empty/invalid/negative as 0 for calculation
-            // We DO NOT reset quantityInput.value here
+        if (isNaN(quantity) || quantity <= 0) {
+            quantity = 1;
+            quantityInput.value = 1;
         }
-        // --- END FIX ---
 
-        // --- Calculation and Display ---
-        productQuantity.textContent = availableQuantity;
-
+        // --- Calculation and Display (Logic remains the same) ---
+        productQuantity.textContent=availableQuantity;//tareek
         originalPriceSpan.textContent = originalPrice.toFixed(2);
         sypPriceSpan.textContent = formatNumberWithCommas(sypPrice.toFixed(0));
 
         const profitPrice = originalPrice * (1 + profitPercentage);
         const sypProfitPrice = sypPrice * (1 + profitPercentage);
 
-        // profitPriceSpan.textContent = profitPrice.toFixed(2);
-        // sypProfitPriceSpan.textContent = formatNumberWithCommas(sypProfitPrice.toFixed(0));
-
-        profitPriceSpan.textContent = Number.isNaN(profitPrice) ? "- - -" : profitPrice.toFixed(2);
-        sypProfitPriceSpan.textContent = Number.isNaN(sypProfitPrice)
-            ? "- - -"
-            : formatNumberWithCommas(sypProfitPrice.toFixed(0));
+        profitPriceSpan.textContent = profitPrice.toFixed(2);
+        sypProfitPriceSpan.textContent = formatNumberWithCommas(sypProfitPrice.toFixed(0));
 
         const totalPrice = profitPrice * quantity;
         const totalSypPrice = sypProfitPrice * quantity;
 
-        // totalPriceSpan.textContent = totalPrice.toFixed(2);
-        // totalSypPriceSpan.textContent = formatNumberWithCommas(totalSypPrice.toFixed(0));
+        totalPriceSpan.textContent = totalPrice.toFixed(2);
+        totalSypPriceSpan.textContent = formatNumberWithCommas(totalSypPrice.toFixed(0));
 
-        totalPriceSpan.textContent = Number.isNaN(totalPrice) ? "- - -" : totalPrice.toFixed(2);
-        totalSypPriceSpan.textContent = Number.isNaN(totalSypPrice)
-            ? "- - -"
-            : formatNumberWithCommas(totalSypPrice.toFixed(0));
-
-
-
-
-        retailPercentOption.value = retailPercent;
-        wholePercentOption.value = wholePercent;
+        // tareek 
+        retailPercentOption.value=retailPercent;
+        wholePercentOption.value=wholePercent;
 
         if (saleType === "0") { // Retail sale (مفرق)
-            retailPercentText.textContent = retailPercent + " % " + "(النسبة المقترحة)";
-            wholePercentText.textContent = wholePercent + " % ";
+            retailPercentText.textContent = retailPercent+" % "+"(النسبة المقترحة)";
+            wholePercentText.textContent = wholePercent+" % ";
+            // profitSelect.value=retailPercent
         } else { // Wholesale sale (جملة)
-            wholePercentText.textContent = wholePercent + " % " + "(النسبة المقترحة)";
-            retailPercentText.textContent = retailPercent + " % ";
+            wholePercentText.textContent = wholePercent+" % "+"(النسبة المقترحة)";
+            retailPercentText.textContent = retailPercent+" % ";
+            // profitSelect.value=wholePercent
         }
 
+
         return {
-            productId: productId,
-            productName: productName,
-            quantity: quantity, // Return the 'safe' quantity (0 or positive)
+            productId: productId, // Use the extracted ID
+            productName: productName, // Use the extracted name
+            quantity: quantity,
             profitPercentage: profitSelect.value,
             originalPrice: originalPrice,
             sypPrice: sypPrice,
@@ -157,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
             sypProfitPrice: sypProfitPrice,
             totalPrice: totalPrice,
             totalSypPrice: totalSypPrice,
-            availableQuantity: availableQuantity,
+            availableQuantity: availableQuantity, // Return available qty for stock check
         };
     }
 
@@ -167,8 +158,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateCartSummary() {
         const totalPrice = cart.reduce((sum, item) => sum + item.totalPrice, 0);
         const totalSypPrice = cart.reduce((sum, item) => sum + item.totalSypPrice, 0);
-        const totalProfit = cart.reduce((sum, item) => sum + item.quantity * (item.profitPrice - item.originalPrice), 0);
-        const totalSypProfit = cart.reduce((sum, item) => sum + item.quantity * (item.sypProfitPrice - item.sypPrice), 0);
+        const totalProfit = cart.reduce((sum, item) => sum + item.quantity*(item.profitPrice-item.originalPrice), 0);
+        const totalSypProfit = cart.reduce((sum, item) => sum + item.quantity*(item.sypProfitPrice-item.sypPrice), 0);
 
         cartTotalPriceSpan.textContent = totalPrice.toFixed(2);
         cartTotalSypPriceSpan.textContent = formatNumberWithCommas(totalSypPrice.toFixed(0));
@@ -199,34 +190,24 @@ document.addEventListener('DOMContentLoaded', function () {
         cart.splice(index, 1);
         renderCart();
     };
-
-    // ===============================================
-    // UPDATED addToCartBtn Event Listener
-    // ===============================================
+    
     addToCartBtn.addEventListener('click', function () {
+        //  CHANGE: We now use the return value of calculatePrices() for product details
         const productDetails = calculatePrices();
         const productId = productDetails.productId;
         const newQuantity = productDetails.quantity;
         const availableQuantity = productDetails.availableQuantity;
-
+        clearForm();
+        
         if (productId == 0) {
             alert("يرجى اختيار منتج أولاً .");
             return;
         }
 
-        // --- FIX: Add check for 0 quantity ---
-        if (newQuantity <= 0) {
-            alert('يرجى إدخال كمية صالحة (أكبر من 0).');
-            quantityInput.value = 1; // Set it to 1
-            calculatePrices(); // Update the UI to show totals for 1
-            return; // Stop before adding to cart
-        }
-        // --- END FIX ---
-
         // Calculate the quantity already in the cart for this product
         const cartItem = cart.find(item => item.productId === productId);
         const quantityInCart = cartItem ? cartItem.quantity : 0;
-
+        
         // Check if adding the new quantity exceeds the available stock
         if (newQuantity + quantityInCart > availableQuantity) {
             alert('لا يمكنك إضافة أكثر من الكمية المتوفرة.');
@@ -235,6 +216,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (cartItem) {
             // Update the quantity and totals for an existing item in the cart
+            // Since productDetails now holds the ADDED quantity/total, we add it.
             cartItem.quantity += productDetails.quantity;
             cartItem.totalPrice += productDetails.totalPrice;
             cartItem.totalSypPrice += productDetails.totalSypPrice;
@@ -242,12 +224,10 @@ document.addEventListener('DOMContentLoaded', function () {
             // Add a new item to the cart
             cart.push(productDetails);
         }
-
-        // Now clear the form and render the cart
-        clearForm();
+        
         renderCart();
     });
-
+        
     sellForm.addEventListener('submit', function (event) {
         event.preventDefault();
         if (cart.length === 0) {
@@ -258,13 +238,11 @@ document.addEventListener('DOMContentLoaded', function () {
         this.submit();
     });
 
-    // --- Initial Event Listeners ---
-    productSearchInput.addEventListener('input', calculatePrices);
+    productSearchInput.addEventListener('input', calculatePrices); 
+    
     SaleTypeSelect.addEventListener('change', calculatePrices);
     profitSelect.addEventListener('change', calculatePrices);
     quantityInput.addEventListener('input', calculatePrices);
-    clearSearchButton.addEventListener('click', clearForm);
-
-    // Initial calculation on page load
+    clearSearchButton.addEventListener('click',clearForm);
     calculatePrices();
 });
