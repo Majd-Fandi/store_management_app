@@ -1,5 +1,5 @@
 from django import forms
-from .models import Product,Classification
+from .models import Product ,Classification
 from django.utils import timezone
 
 # --- هذا هو النموذج الجديد لصفحة الإضافة المجمعة ---

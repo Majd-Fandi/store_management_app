@@ -1,9 +1,0 @@
-using pip freeze > requirements.txt will list all the packages installed on python ! 
-
-use the command : 
-
-pipreqs . --force
-
-in the project root to create the final requirements.txt file 
-
-pipreqs will check the project imports to detect the packages used in your project .

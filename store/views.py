@@ -1,23 +1,26 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from django.db.models import Sum, Q, F ,Count
-from django.db.models.functions import TruncDay
-
+# Standard Library Imports (Python Built-ins)
 from decimal import Decimal
 from datetime import datetime
 from io import BytesIO
 
-from .models import Product, Settings, Sale, SaleItem,Classification
-from .forms import ProductForm
-from .forms import DateRangeForm
+# Third-Party Library Imports (Django, ReportLab, Pandas, etc.)
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse, JsonResponse
+from django.db.models import Sum, Q, F, Count
+from django.db.models.functions import TruncDay
+from django.forms import formset_factory
 
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
 import json
 import pandas as pd
+
+# Local Application/Project Imports
+from .models import Product, Settings, Sale, SaleItem, Classification
+from .forms import ProductBulkAddForm, ProductForm, DateRangeForm
 
 # =======================================================================================
 
@@ -280,8 +283,6 @@ def add_product(request):
 # =======================================================================================
 # =======================================================================================
 
-from django.http import JsonResponse
-
 def add_classification(request):
     if request.method == "POST":
         category = request.POST.get('category', '').strip()
@@ -329,7 +330,7 @@ def remove_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     # product.delete()
     product.safe_delete()
-    return redirect('home')
+    return redirect('product_list')
 
 
 
@@ -588,7 +589,7 @@ def product_detail(request, product_id):
         form = ProductForm(request.POST, instance=product)
         if form.is_valid():
             form.save()
-            return redirect('home')  # Redirect back to product list
+            return redirect('product_list')  # Redirect back to product list
     else:
         form = ProductForm(instance=product)
 
@@ -602,17 +603,6 @@ def product_detail(request, product_id):
 # =======================================================================================
 # =======================================================================================
 # =======================================================================================
-
-
-from datetime import datetime
-from io import BytesIO
-from django.db.models import Sum
-from django.http import HttpResponse
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
-
 
 def generate_pdf(request):
     if request.method == 'POST':
@@ -986,8 +976,7 @@ def sales_statistics(request):
 # =======================================================================================
 # =======================================================================================
 
-from django.forms import formset_factory
-from .forms import ProductBulkAddForm 
+
 
 # def add_bulk_products(request):
     

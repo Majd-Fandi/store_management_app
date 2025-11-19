@@ -23,8 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#m6gf%8_j%crmfb^0e!wfsv%=o(@2(lwy$7i-e_#s9j7&&g&d@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-# DEBUG = True
+# DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*','localhost','127.0.0.1']
 
@@ -137,6 +137,7 @@ USE_TZ = True
 # Default STATIC_URL and STATIC_ROOT
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"  # For collectstatic command
+
 # STATICFILES_DIRS = [BASE_DIR / 'store' / 'static']  # Only your app's static files
 
 

@@ -18,9 +18,8 @@ class Classification(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(null=True,blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)  # Original cost
-    quantity = models.PositiveIntegerField()  # Number of items available
-    # newly added  
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField() 
     classification=models.ForeignKey(Classification, on_delete=models.SET_NULL,null=True,blank=True) 
     retail_sale_percent = models.PositiveIntegerField(null=True, blank=True)
     whole_sale_percent = models.PositiveIntegerField(null=True, blank=True)
@@ -48,7 +47,7 @@ class Product(models.Model):
 # ======================================================================
 
 class Sale(models.Model):
-    date = models.DateField(default=timezone.now)  # Date of the sale
+    date = models.DateField(default=timezone.now)
     products = models.ManyToManyField(Product, through='SaleItem') 
 
     def __str__(self):
@@ -60,13 +59,12 @@ class Sale(models.Model):
 
 class SaleItem(models.Model):
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE)  # CASCADE is fine here because SaleItem is a child of Sale
-    product = models.ForeignKey(Product, on_delete=models.PROTECT)  # Reference to the Product
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()  # Quantity of the product sold
     price_at_sale = models.DecimalField(max_digits=10, decimal_places=2)  # Price at the time of sale
     dollar_rate_at_sale=models.DecimalField(max_digits=10, decimal_places=2)
 
     def save(self, *args, **kwargs):
-        # Set the price_at_sale to the current product price if it's not already set
         if self.dollar_rate_at_sale is None:
             self.dollar_rate_at_sale = Settings.objects.filter(key='dollar_rate').first().value
         super().save(*args, **kwargs)

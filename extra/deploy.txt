@@ -1,2 +1,0 @@
-1. set debug to false 
-2. run : python manage.py collectstatic
