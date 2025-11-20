@@ -26,14 +26,14 @@
         <li>
           <a href="{% url 'home' %}" 
              class="{% if request.resolver_match.url_name == 'product_list' or request.resolver_match.url_name == 'home' or request.resolver_match.url_name == 'product_detail' %}active{% endif %}">
-             <img src="{% static 'icons/warehouse_icon.svg' %}" width="24" height="24" alt="Warehouse Icon">
+             <img src="{% static 'icons/goods_icon.svg' %}" width="24" height="24" alt="Warehouse Icon">
              البضائع
           </a>
         </li>
         <li>
           <a href="{% url 'add_product' %}" 
              class="{% if request.resolver_match.url_name == 'add_product' %}active{% endif %}">
-             <img src="{% static 'icons/add_icon.svg' %}" width="24" height="24" alt="Add Product Icon">
+             <img src="{% static 'icons/add_icon_2.svg' %}" width="24" height="24" alt="Add Product Icon">
             إضافة مواد
           </a>
         </li>
@@ -47,7 +47,7 @@
         <li>
           <a href="{% url 'list_sales' %}" 
           class="{% if request.resolver_match.url_name == 'list_sales' or request.resolver_match.url_name == 'sale_detail' %}active{% endif %}">
-          <img src="{% static 'icons/sales_icon.svg' %}" width="24" height="24" alt="Sales Icon">
+          <img src="{% static 'icons/sales_icon_2.svg' %}" width="24" height="24" alt="Sales Icon">
             المبيعات
           </a>
         </li>

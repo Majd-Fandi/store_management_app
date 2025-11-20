@@ -14,10 +14,10 @@
   padding: 1rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height:250px;
+  /* display: flex; */
+  /* flex-direction: column; */
+  /* justify-content: space-between; */
+  /* height:250px; */
 }
 
 /* Hover effect for product card */
@@ -50,6 +50,7 @@
 .product-card p {
   font-size: 0.9rem;
   color: #444;
+  margin: 0.75rem 0;
 }
 
 /* Price styling */

@@ -80,9 +80,9 @@
             <h5 class="{% if product.classification %}classification{% else %}no-classification{% endif %}">
               {{ product.classification|default:"بدون تصنيف" }}
             </h5>            
-            {% if product.description %}
+            {% comment %} {% if product.description %}
               <p class="description">{{ product.description }}</p>
-            {% endif %}
+            {% endif %} {% endcomment %}
             <p><strong>سعر القطعة :</strong> $ {{ product.price }}</p>
             <p><strong>سعر القطعة بالليرة :</strong> SYP {{ product.syp_price|intcomma }}</p>
             <p>
