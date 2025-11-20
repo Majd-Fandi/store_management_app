@@ -7,7 +7,7 @@
         
         <form id="addClassificationForm" method="post" action="{% url 'add_classification' %}">
             {% csrf_token %}
-            <div class="modal-body-custom">
+            <div>
                 <div class="form-group-custom">
                     <label class="modal-form-label">الصنف :</label>
                     <input type="text" class="modal-form-control" name="category" required> 
@@ -75,7 +75,6 @@
     margin-top: 5px;
 }
 
-/* Basic Form/Button Styling (Adjust as per your global CSS) */
 .form-group-custom { margin-bottom: 15px; }
 .modal-form-label { display: block; margin-bottom: 5px; font-weight: bold; }
 .modal-form-control { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }

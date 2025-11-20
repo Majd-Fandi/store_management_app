@@ -28,8 +28,10 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: 10px 20px;
-  background-color: #F8F9FA; /* Changed: Slightly cleaner, off-white background */
-  border-bottom: 1px solid #DEE2E6; /* Changed: Softer border color */
+  background-color: #F8F9FA;
+  /* Changed: Slightly cleaner, off-white background */
+  border-bottom: 1px solid #DEE2E6;
+  /* Changed: Softer border color */
 }
 
 header .logo img {
@@ -37,6 +39,7 @@ header .logo img {
   position: relative;
   top: 7px;
 }
+
 .text-logo {
   /* Changed: Updated gradient to match the new primary blue theme */
   background: linear-gradient(135deg, #004C80 0%, #0073C2 100%);
@@ -47,6 +50,7 @@ header .logo img {
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
 nav ul {
   list-style: none;
   display: flex;
@@ -68,7 +72,8 @@ nav ul li a:hover {
 
 nav ul li a.active {
   font-weight: bold;
-  color: #0f7ec3; /* Changed: New primary blue */
+  color: #0f7ec3;
+  /* Changed: New primary blue */
   background-color: #4c4d4f14;
   border-radius: 4px;
 }
@@ -110,63 +115,91 @@ main {
 }
 
 .blue {
-  background-color: #005C99; /* Changed: New primary blue */
-  color: white; /* Ensure text is readable */
+  background-color: #005C99;
+  /* Changed: New primary blue */
+  color: white;
+  /* Ensure text is readable */
 }
+
 .special_blue {
-  background-color: #4A6B8A; /* Changed: More professional, desaturated blue */
+  background-color: #4A6B8A;
+  /* Changed: More professional, desaturated blue */
 }
+
 .gray {
-  background-color: #6C757D; /* Changed: Standard, professional gray */
+  background-color: #6C757D;
+  /* Changed: Standard, professional gray */
 }
+
 .red {
-  background-color: #D43545; /* Changed: Slightly deeper, more serious red */
+  background-color: #D43545;
+  /* Changed: Slightly deeper, more serious red */
 }
+
 .green {
-  background-color: #198754; /* Changed: Deeper, more professional green */
+  background-color: #198754;
+  /* Changed: Deeper, more professional green */
 }
 
 .red:hover {
-  background-color: #BB2D3B; /* Changed: Darker red on hover */
+  background-color: #BB2D3B;
+  /* Changed: Darker red on hover */
 }
+
 .green:hover {
-  background-color: #157347; /* Changed: Darker green on hover */
+  background-color: #157347;
+  /* Changed: Darker green on hover */
 }
+
 .blue:hover {
-  background-color: #004C80; /* Changed: Darker blue on hover */
+  background-color: #004C80;
+  /* Changed: Darker blue on hover */
 }
+
 .special_blue:hover {
-  background-color: #3A5570; /* Changed: Darker special blue on hover */
+  background-color: #3A5570;
+  /* Changed: Darker special blue on hover */
 }
+
 .gray:hover {
-  background-color: #5A6268; /* Changed: Darker gray on hover */
+  background-color: #5A6268;
+  /* Changed: Darker gray on hover */
 }
 
 /* ====================================================== OTHERS ======================================================== */
 
 a {
   text-decoration: none;
-  color: #005C99; /* Changed: Default link color to match primary blue */
+  color: #005C99;
+  /* Changed: Default link color to match primary blue */
 }
 
 button a {
   color: white;
 }
 
-h1,h2,h3,h4,h5,h6{
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   margin: 0;
 }
 
 
-.error{
-  color: #BB2D3B; /* Changed: Aligned with new red button color */
+.error {
+  color: #BB2D3B;
+  /* Changed: Aligned with new red button color */
 }
-.good{
-  color: #157347; /* Changed: Aligned with new green button color */
+
+.good {
+  color: #157347;
+  /* Changed: Aligned with new green button color */
 }
 
 
-.form-label{
+.form-label {
   color: #686868;
   font-size: small;
   font-weight: bold;
@@ -178,62 +211,115 @@ h1,h2,h3,h4,h5,h6{
 form input,
 form textarea,
 form select {
-  font-family: 'Tajawal', sans-serif; /* Ensure the font is consistent */
-  padding: 0.5rem 1rem; /* Consistent padding */
-  margin-bottom: 10px; /* Consistent margin */
-  margin-top: 4px; /* Consistent margin */
-  border: 1px solid #CED4DA; /* Changed: Softer gray border */
-  border-radius: 4px; /* Consistent border radius */
-  transition: box-shadow 0.3s, border-color 0.3s; /* Smooth transition for focus */
-  width: 100%; /* Make all fields take full width of their container */
-  max-width: 335px; /* Set a max-width for consistency */
-  height: 40px; /* Consistent height */
-  box-sizing: border-box; /* Ensure padding and border are included in the element's total width and height */
+  font-family: 'Tajawal', sans-serif;
+  /* Ensure the font is consistent */
+  padding: 0.5rem 1rem;
+  /* Consistent padding */
+  margin-bottom: 10px;
+  /* Consistent margin */
+  margin-top: 4px;
+  /* Consistent margin */
+  border: 1px solid #CED4DA;
+  /* Changed: Softer gray border */
+  border-radius: 4px;
+  /* Consistent border radius */
+  transition: box-shadow 0.3s, border-color 0.3s;
+  /* Smooth transition for focus */
+  width: 100%;
+  /* Make all fields take full width of their container */
+  max-width: 335px;
+  /* Set a max-width for consistency */
+  height: 40px;
+  /* Consistent height */
+  box-sizing: border-box;
+  /* Ensure padding and border are included in the element's total width and height */
 }
 
 /* Specific styles for textarea */
 form textarea {
-  height: auto; /* Allow textarea to grow based on content */
-  min-height: 100px; /* Set a minimum height */
-  resize: vertical; /* Allow vertical resizing */
+  height: auto;
+  /* Allow textarea to grow based on content */
+  min-height: 100px;
+  /* Set a minimum height */
+  resize: vertical;
+  /* Allow vertical resizing */
 }
 
 /* Focus styles for all input fields */
 form input:focus,
 form textarea:focus,
 form select:focus {
-  outline: none; /* Remove default outline */
-  border-color: #005C99; /* Changed: Focus border to new primary blue */
+  outline: none;
+  /* Remove default outline */
+  border-color: #005C99;
+  /* Changed: Focus border to new primary blue */
   /* Changed: Focus shadow to new primary blue */
-  box-shadow: 0 0 5px rgba(0, 92, 153, 0.5); 
+  box-shadow: 0 0 5px rgba(0, 92, 153, 0.5);
 }
 
 /* Ensure select dropdown arrow is styled consistently */
 form select {
-  appearance: none; /* Remove default arrow */
-  background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>'); /* Custom arrow */
+  appearance: none;
+  /* Remove default arrow */
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  /* Custom arrow */
   background-repeat: no-repeat;
-  background-position: left 0.75rem center; /* Position the arrow */
-  background-size: 12px; /* Size of the arrow */
+  background-position: left 0.75rem center;
+  /* Position the arrow */
+  background-size: 12px;
+  /* Size of the arrow */
 }
 
 /* Optional: Add a hover effect for better interactivity */
 form input:hover,
 form textarea:hover,
 form select:hover {
-  border-color: #A6CFF0; /* Changed: Lighter shade of new primary blue */
+  border-color: #A6CFF0;
+  /* Changed: Lighter shade of new primary blue */
 }
 
 
-.card{
+.card {
   background: #fff;
-  border: 1px solid #e0e0e0; /* Subtle border */
-  border-radius: 8px; /* Rounded corners */
+  border: 1px solid #e0e0e0;
+  /* Subtle border */
+  border-radius: 8px;
+  /* Rounded corners */
   padding: 1.5rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  /* Soft shadow for depth */
   width: 70%;
   padding: 20px;
   margin: 20px auto;
+}
+
+
+
+/* ================================================== Confirm Delete MODALS ============================================================ */
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  margin: 20% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 250px;
+  text-align: center;
+}
+
+.modal-actions {
+  margin-top: 20px;
 }
 
 
@@ -250,8 +336,8 @@ form select:hover {
 
   header .logo img {
     /* display: none; */
-    height: 40px; 
-    top: 5px; 
+    height: 40px;
+    top: 5px;
   }
 
   nav ul {
@@ -262,6 +348,7 @@ form select:hover {
   nav ul li a {
     padding: 5px;
   }
+
   /* nav ul li a img {
     display: none;
   } */
@@ -273,11 +360,13 @@ form select:hover {
   form input,
   form textarea,
   form select {
-    max-width: 100%; /* Allow input fields to take full width on small screens */
+    max-width: 100%;
+    /* Allow input fields to take full width on small screens */
   }
 
   .btn {
-    width: 100%; /* Make buttons full width on small screens */
+    width: 100%;
+    /* Make buttons full width on small screens */
     margin-top: 0.5rem;
   }
 }
@@ -305,11 +394,13 @@ form select:hover {
   form input,
   form textarea,
   form select {
-    max-width: 100%; /* Allow input fields to take full width on medium screens */
+    max-width: 100%;
+    /* Allow input fields to take full width on medium screens */
   }
 
   .btn {
-    width: auto; /* Reset button width to auto */
+    width: auto;
+    /* Reset button width to auto */
     margin-top: 0.75rem;
   }
 }
@@ -337,7 +428,8 @@ form select:hover {
   form input,
   form textarea,
   form select {
-    max-width: 335px; /* Reset max-width for larger screens */
+    max-width: 335px;
+    /* Reset max-width for larger screens */
   }
 
   .btn {
@@ -367,7 +459,8 @@ form select:hover {
   form input,
   form textarea,
   form select {
-    max-width: 335px; /* Reset max-width for extra large screens */
+    max-width: 335px;
+    /* Reset max-width for extra large screens */
   }
 
   .btn {

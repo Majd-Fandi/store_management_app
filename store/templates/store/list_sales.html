@@ -59,13 +59,13 @@
     </tbody>
 </table>
 
-<div id="salesModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
+<div id="salesModal" class="form-modal">
+  <div class="form-modal-content">
+    <div class="form-modal-header">
       <h5>اختر الفترة :</h5>
       <span class="close" onclick="closeModal()">&times;</span>
     </div>
-    <div class="modal-body">
+    <div>
       <form id="salesForm" method="POST" action="{% url 'generate_pdf' %}">
         {% csrf_token %}
         <div class="form-group">
@@ -88,7 +88,7 @@
             <h5>اختر السنة و الشهر :</h5>
             <span class="close" onclick="closeModal()">&times;</span>
         </div>
-        <div class="modal-body">
+        <div>
             <form id="salesForm" method="POST" action="{% url 'generate_pdf'%}">
                 {% csrf_token %}
                 <div class="form-group">

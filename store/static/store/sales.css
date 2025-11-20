@@ -51,7 +51,7 @@ hr {
 
 /* Basic styles for the modal */
 
-.modal {
+.form-modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
@@ -63,7 +63,7 @@ hr {
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
 }
-.modal-content {
+.form-modal-content {
     border-radius: 4px;
     background-color: #fefefe;
     margin: 15% auto;
@@ -71,7 +71,7 @@ hr {
     border: 1px solid #888;
     width: 40%; 
 }
-.modal-header {
+.form-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;

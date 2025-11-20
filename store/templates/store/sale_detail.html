@@ -43,10 +43,10 @@
 
 <button type="button" class="btn red" id="open-delete-modal">حذف عملية البيع</button>
 
-<div id="delete-modal" class="modal-1">
-    <div class="modal-1-content">
+<div id="delete-modal" class="modal">
+    <div class="modal-content">
         <p>هل تريد حذف عملية البيع ؟</p>
-        <div class="modal-1-actions">
+        <div class="modal-actions">
             <a id="confirm-delete" href="{% url 'remove_sale' sale.id %}">
                 <button class="btn red">حذف</button>
             </a>
@@ -55,32 +55,6 @@
     </div>
 </div>
 
-<style>
-
-    /* Modal Styles */
-    .modal-1 {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-    .modal-1-content {
-        background-color: white;
-        border-radius:8px;
-        margin: 20% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 250px;
-        text-align: center;
-    }
-    .modal-1-actions {
-        margin-top: 20px;
-    }
-</style>
 
 <script>
     // Delete Confirmation Modal Logic
