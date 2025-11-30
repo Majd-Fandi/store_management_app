@@ -5,9 +5,9 @@
 {% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'store/sales.css' %}">
 
+<a href="{% url 'list_sales' %}" class="back-link">&rarr; العودة إلى قائمة المبيعات</a>
 <p><strong>رقم عملية البيع :</strong> {{ sale.id }}</p>
 <p><strong>تاريخ عملية البيع :</strong> {{ sale.date|date:"Y/m/d"  }}</p>
-<a href="{% url 'list_sales' %}">العودة إلى قائمة المبيعات</a>
 
 
 

@@ -13,7 +13,7 @@ urlpatterns = [
     path('classifications', views.classifications_list, name='classifications_list'),
     path('add-classification', views.add_classification, name='add_classification'),
     path('remove-category/<int:classification_id>', views.remove_classification, name='remove_classification'),
-    
+
     path('sell', views.sell_product, name='sell_product'),
     path('sales', views.list_sales, name='list_sales'),
     path('sales/<int:sale_id>', views.sale_detail, name='sale_detail'),
@@ -23,10 +23,20 @@ urlpatterns = [
     path('generate_pdf', views.generate_pdf, name='generate_pdf'),
 
     path('settings', views.settings_view, name='settings'),
-    
+
     path('import-products/', views.import_products, name='import_products'),
     path('insert-products/', views.add_bulk_products, name='insert_products'),
-    
+
     path('sales-statistics/', views.sales_statistics, name='sales_statistics'),
+
+        # Trader URLs
+    path('traders/', views.trader_list, name='trader_list'),
+    path('traders/add/', views.add_trader, name='add_trader'),
+    path('traders/<int:pk>/', views.trader_detail, name='trader_detail'),
+    
+    # Transaction URLs
+    path('traders/<int:trader_pk>/add_transaction/', 
+         views.add_transaction, 
+         name='add_transaction'),
 
 ]

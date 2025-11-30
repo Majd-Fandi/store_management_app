@@ -5,6 +5,7 @@
 <link rel="stylesheet" href="{% static 'store/add_update_product.css' %}">
 
 <div class="card">
+    {% comment %} <a href="{% url 'product_list' %}">&rarr; رجوع</a> {% endcomment %}
 <div class="container">
     <form method="post" id="product-form">
         {% csrf_token %}

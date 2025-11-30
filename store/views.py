@@ -1058,3 +1058,81 @@ def add_bulk_products(request):
         formset = ProductFormSet(prefix='products')
 
     return render(request, 'store/add_bulk_products.html', {'formset': formset})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.forms import modelformset_factory
+from .models import Trader, Transaction
+from .forms import TraderForm, TransactionForm
+from django.urls import reverse
+
+# --- Trader Management Views ---
+
+def trader_list(request):
+    """Displays a list of all traders with their current balances."""
+    traders = Trader.objects.all().order_by('name')
+    context = {
+        'traders': traders,
+    }
+    return render(request, 'store/traders/trader_list.html', context)
+
+def add_trader(request):
+    """Handles adding a new trader."""
+    if request.method == 'POST':
+        form = TraderForm(request.POST)
+        if form.is_valid():
+            trader = form.save()
+            return redirect('trader_detail', pk=trader.pk)
+    else:
+        form = TraderForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'store/traders/add_trader.html', context)
+
+def trader_detail(request, pk):
+    """Displays details and all transactions for a specific trader."""
+    trader = get_object_or_404(Trader, pk=pk)
+    transactions = trader.transactions.all()
+    
+    context = {
+        'trader': trader,
+        'transactions': transactions,
+    }
+    return render(request, 'store/traders/trader_detail.html', context)
+
+
+# --- Transaction Management Views ---
+
+def add_transaction(request, trader_pk):
+    """Handles adding a new transaction (Purchase or Payment) for a trader."""
+    trader = get_object_or_404(Trader, pk=trader_pk)
+
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            transaction = form.save(commit=False)
+            transaction.trader = trader
+            transaction.save() # The save method updates the trader balance
+            return redirect('trader_detail', pk=trader.pk)
+    else:
+        form = TransactionForm()
+    
+    context = {
+        'form': form,
+        'trader': trader,
+    }
+    return render(request, 'store/traders/add_transaction.html', context)

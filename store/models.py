@@ -90,4 +90,110 @@ class Settings(models.Model):
 # ======================================================================
 # ======================================================================
 
+from django.db.models import Case, When, DecimalField, Sum, F
 
+class Trader(models.Model):
+    """
+    Represents a dealer or supplier.
+    The current_balance is cached here for quick lookup.
+    A positive balance means the store (you) owes the trader (liability).
+    A negative balance means the trader owes the store (asset).
+    """
+    name = models.CharField(max_length=150, verbose_name="اسم الشركة \ التاجر")
+    contact_info = models.TextField(blank=True, verbose_name="معلومات التواصل")
+    current_balance = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0.00, 
+        verbose_name="Current Financial Balance"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+    def update_balance(self):
+        """
+        Recalculates the total balance based on all related transactions.
+        """
+        balance_qs = self.transactions.aggregate(
+            total=Sum(
+                Case(
+                    When(transaction_type=Transaction.TransactionType.PURCHASE, then=F('amount')),
+                    When(transaction_type=Transaction.TransactionType.PAYMENT, then=-F('amount')),
+                    default=0,
+                    output_field=DecimalField(max_digits=10, decimal_places=2)
+                )
+            )
+        )
+        new_balance = balance_qs['total'] or 0.00
+        self.current_balance = new_balance
+        self.save(update_fields=['current_balance'])
+
+    # def update_balance(self):
+    #     """
+    #     Recalculates the total balance based on all related transactions.
+    #     This is a fallback/verification method. The Transaction save method handles
+    #     real-time updates.
+    #     """
+    #     # Calculate the sum of amounts, where Purchase adds to the balance (we owe them)
+    #     # and Payment subtracts from the balance (we pay them, reducing our debt).
+    #     balance_qs = self.transactions.aggregate(
+    #         total=Sum(
+    #             F('amount'), 
+    #             filter=models.Q(transaction_type=Transaction.TransactionType.PURCHASE)
+    #         ) - Sum(
+    #             F('amount'),
+    #             filter=models.Q(transaction_type=Transaction.TransactionType.PAYMENT)
+    #         )
+    #     )
+    #     new_balance = balance_qs['total'] if balance_qs['total'] is not None else 0.00
+    #     self.current_balance = new_balance
+    #     self.save(update_fields=['current_balance'])
+
+
+class Transaction(models.Model):
+    class TransactionType(models.TextChoices):
+        # PURCHASE = 'P', 'Purchase'  # Store buys from trader (increases debt/liability)
+        # PAYMENT = 'T', 'Payment'    # Store pays trader (decreases debt/liability)
+        PURCHASE = 'P', 'استلام'  # Store buys from trader (increases debt/liability)
+        PAYMENT = 'T', 'دفع'    # Store pays trader (decreases debt/liability)
+
+    trader = models.ForeignKey(
+        Trader, 
+        on_delete=models.CASCADE, 
+        related_name='transactions', 
+        verbose_name="Trader"
+    )
+    transaction_type = models.CharField(
+        max_length=1, 
+        choices=TransactionType.choices, 
+        verbose_name="Type"
+    )
+    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Amount")
+    notes = models.TextField(blank=True, verbose_name="Notes")
+    date = models.DateTimeField(auto_now_add=True, verbose_name="Date")
+
+    class Meta:
+        ordering = ['-date']
+        verbose_name = "Transaction"
+        verbose_name_plural = "Transactions"
+
+    def __str__(self):
+        return f"{self.get_transaction_type_display()} of {self.amount} with {self.trader.name}"
+
+    def save(self, *args, **kwargs):
+        """
+        Overrides save method to update the trader's balance.
+        If it's an existing transaction being updated, we need to handle the old amount.
+        We assume this is a new transaction for simplicity, but a full app would need
+        to handle updates/deletions via signals/overrides. For a new record:
+        """
+        super().save(*args, **kwargs)  # Save the transaction first
+
+        # Simple logic for NEW transaction: update the associated Trader's balance
+        self.trader.update_balance()
+
+    # Note: For production use, you would also need to implement delete() and update 
+    # logic to reverse the balance changes correctly.

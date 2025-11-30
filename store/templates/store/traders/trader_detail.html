@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'store/traders.css' %}">
+<div class="container">
+    <a href="{% url 'trader_list' %}" class="back-link">&rarr; العودة للقائمة </a>
+    
+    <header class="trader-header">
+        <h1>{{ trader.name }}</h1>
+        {% if trader.contact_info %}
+        <p> التواصل : {{ trader.contact_info|linebreaksbr }}</p>
+        {% endif %}
+    </header>
+    
+    <section class="balance-summary">
+        <!-- Display the balance and clearly state who owes whom -->
+        <div class="balance-card 
+        {% if trader.current_balance > 0 %}card-liability{% elif trader.current_balance < 0 %}card-asset{% else %}card-neutral{% endif %}">
+        <span class="balance-amount">{{ trader.current_balance|floatformat:0|intcomma }} SYP</span>
+ <p class="balance-status">
+    {% if trader.current_balance > 0 %}
+    مستحق للتاجر
+    {% elif trader.current_balance < 0 %}
+    مستحق للمحل
+    {% else %}
+    تم التسوية
+    {% endif %}
+</p>
+        </div>
+            
+            <a href="{% url 'add_transaction' trader_pk=trader.pk %}" class="btn blue large-btn">
+                + إضافة معاملة مالية
+            </a>
+        </section>
+        
+        <section class="transaction-history">
+            {% comment %} <h2>تاريخ المعاملات المالية</h2> {% endcomment %}
+            <table class="transaction-table">
+                <thead>
+                    <tr>
+                        <th>بتاريخ</th>
+                        <th>استلام / دفع</th>
+                        <th>المبلغ (SYP)</th>
+                        <th>الوصف</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr class="{% if transaction.transaction_type == 'P' %}purchase-row{% else %}payment-row{% endif %}">
+                        <td>{{ transaction.date|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            <span class="type-badge 
+                            {% if transaction.transaction_type == 'P' %}badge-purchase{% else %}badge-payment{% endif %}">
+                            {{ transaction.get_transaction_type_display }}
+                        </span>
+                    </td>
+                    <td>{{ transaction.amount|floatformat:0|intcomma }}</td>
+                    <td>{{ transaction.notes|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="no-data">لا يوجد معاملات مالية بعد.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+
+{% endblock content %}

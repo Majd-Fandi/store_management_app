@@ -128,3 +128,41 @@ class DateRangeForm(forms.Form):
         widget=forms.DateInput(attrs={'type': 'date'}),  # Use 'date' input type
         initial=timezone.now().date()  # Set initial value to today's date
     )
+
+
+
+
+
+
+
+
+
+
+from django import forms
+from .models import Trader, Transaction
+
+class TraderForm(forms.ModelForm):
+    """Form for adding or editing a Trader."""
+    class Meta:
+        model = Trader
+        fields = ['name', 'contact_info']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'input-field', 'placeholder': 'أدخل اسم الشركة أو اسم التاجر'}),
+            'contact_info': forms.Textarea(attrs={'class': 'input-field', 'rows': 3, 'placeholder': 'رقم تواصل , عنوان , بريد إلكتروني ...'}),
+        }
+
+class TransactionForm(forms.ModelForm):
+    """Form for adding a new Transaction."""
+    class Meta:
+        model = Transaction
+        fields = ['transaction_type', 'amount', 'notes']
+        widgets = {
+            'transaction_type': forms.Select(attrs={'class': 'input-field'}),
+            'amount': forms.NumberInput(attrs={'class': 'input-field', 'min': 0.01, 'step': 0.01, 'placeholder': ''}),
+            'notes': forms.Textarea(attrs={'class': 'input-field', 'rows': 2, 'placeholder': 'إختياري'}),
+        }
+        labels = {
+            'transaction_type': 'نوع المعاملة (استلام / دفع)',
+            'amount': 'المبلغ (SYP)',
+            'notes': 'ملاحظات',
+        }

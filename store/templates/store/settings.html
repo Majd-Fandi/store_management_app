@@ -4,7 +4,7 @@
 <div class="card">
 <form method="POST">
     {% csrf_token %}
-    <h3 style="padding-top:10px;padding-bottom:10px;">إعدادات النظام : </h3>
+    <h3 style="padding-top:10px;padding-bottom:10px;">إعدادات النظام </h3>
     {% for setting in settings %}
         <div>
             <label class="form-label" for="{{ setting.key }}">

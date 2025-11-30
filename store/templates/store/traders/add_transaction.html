@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'store/traders.css' %}">
+<div class="container">
+    <a href="{% url 'trader_detail' pk=trader.pk %}" class="back-link">&rarr; رجوع </a>
+    <p class="subtitle">إضافة معاملة مالية جديدة : <strong>{{ trader.name }}</strong></p>
+    
+    <form method="post" class="form-card">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.transaction_type.id_for_label }}">{{ form.transaction_type.label }}</label>
+            {{ form.transaction_type }}
+            {% comment %} <small class="help-text">Select 'Purchase' if you bought goods (you owe them). Select 'Payment' if you paid them (reducing your debt).</small> {% endcomment %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.amount.id_for_label }}">{{ form.amount.label }}</label>
+            {{ form.amount }}
+            {% if form.amount.errors %}<p class="error-text">{{ form.amount.errors }}</p>{% endif %}
+        </div>
+        
+            <div class="form-group">
+                <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                {{ form.notes }}
+                {% if form.notes.errors %}<p class="error-text">{{ form.notes.errors }}</p>{% endif %}
+            </div>
+            
+            <button type="submit" class="btn blue full-width-btn">تسجيل</button>
+        </form>
+    </div>
+{% endblock content %}

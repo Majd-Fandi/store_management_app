@@ -1,0 +1,271 @@
+/* Basic Reset and Variables */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --bg-light: #f8f9fa;
+    --text-dark: #343a40;
+    --border-color: #dee2e6;
+}
+
+
+.container {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+
+
+/* --- Buttons & Links --- */
+.btn {
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border: 1px solid transparent;
+}
+
+
+
+.small-btn {
+    padding: 2px 7px;
+    font-size: 14px;
+}
+
+.large-btn {
+    padding: 12px 20px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.full-width-btn {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.add-trader-btn-container {
+    display: flex;
+    justify-content: flex-end;
+    position: absolute;
+    top: 170px;
+    left: 270px;
+}
+
+/* --- Tables --- */
+.trader-table,
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.trader-table th,
+.trader-table td,
+.transaction-table th,
+.transaction-table td {
+    border: 1px solid var(--border-color);
+    padding: 12px;
+    text-align: right;
+}
+
+.trader-table th,
+.transaction-table th {
+    background-color: var(--secondary-color);
+    color: white;
+    font-weight: bold;
+}
+
+.trader-table tbody tr:nth-child(even),
+.transaction-table tbody tr:nth-child(even) {
+    background-color: var(--bg-light);
+}
+
+.no-data {
+    text-align: center !important;
+    font-style: italic;
+    color: var(--secondary-color);
+}
+
+/* --- Balance Indicators --- */
+.balance-tag {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.liability {
+    background-color: #ffddd2;
+    /* Light Peach/Orange */
+    color: #e63946;
+    /* Dark Red */
+}
+
+.asset {
+    background-color: #d4edda;
+    /* Light Green */
+    color: var(--success-color);
+    /* Dark Green */
+}
+
+.neutral {
+    background-color: #e9ecef;
+    /* Light Gray */
+    color: var(--secondary-color);
+}
+
+/* --- Trader Detail Summary --- */
+.trader-header {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.balance-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border-color);
+}
+
+.balance-card {
+    width: 80%;
+    max-width: 400px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.balance-amount {
+    font-size: 2.5em;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+
+.balance-status {
+    font-size: 1.1em;
+    font-style: italic;
+}
+
+.card-liability {
+    background-color: #fce4ec;
+    /* Light Pink */
+    color: #c2185b;
+    /* Deep Pink */
+    border: 1px solid #c2185b;
+}
+
+.card-asset {
+    background-color: #e8f5e9;
+    /* Light Mint */
+    color: #388e3c;
+    /* Deep Green */
+    border: 1px solid #388e3c;
+}
+
+.card-neutral {
+    background-color: #eceff1;
+    /* Light Blue-Gray */
+    color: #455a64;
+    /* Dark Gray */
+    border: 1px solid #455a64;
+}
+
+/* --- Transaction History --- */
+.transaction-history {
+    margin-top: 30px;
+}
+
+.type-badge {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.badge-purchase {
+    background-color: #f8d7da;
+    /* Light Red */
+    color: #721c24;
+}
+
+.badge-payment {
+    background-color: #d4edda;
+    /* Light Green */
+    color: #155724;
+}
+
+/* Highlight rows for quick visual scan */
+.purchase-row {
+    background-color: #fff3f5;
+}
+
+.payment-row {
+    background-color: #f1f8f3;
+}
+
+
+/* --- Forms --- */
+.form-card {
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    /* Important for padding/border calculation */
+}
+
+.input-field:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.error-text {
+    color: var(--danger-color);
+    font-size: 0.8em;
+    margin-top: 5px;
+}
+
+.help-text {
+    display: block;
+    font-size: 0.8em;
+    color: var(--secondary-color);
+    margin-top: 5px;
+}
+

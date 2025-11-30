@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'store/traders.css' %}">
+<div class="container">
+    <a href="{% url 'trader_list' %}" class="back-link">&rarr;  رجوع</a>
+    
+    <form method="post" class="form-card">
+        {% csrf_token %}
+        
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+            <p class="error-text">{{ field.errors }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn blue full-width-btn">حفظ</button>
+    </form>
+</div>
+{% endblock content %}

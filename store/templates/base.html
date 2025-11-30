@@ -48,7 +48,14 @@
           <a href="{% url 'list_sales' %}" 
           class="{% if request.resolver_match.url_name == 'list_sales' or request.resolver_match.url_name == 'sale_detail' %}active{% endif %}">
           <img src="{% static 'icons/sales_icon_2.svg' %}" width="24" height="24" alt="Sales Icon">
-            المبيعات
+          المبيعات
+        </a>
+      </li>
+      <li>
+        <a href="{% url 'trader_list' %}" 
+             class="{% if request.resolver_match.url_name == 'trader_list' or request.resolver_match.url_name == 'trader_detail' or request.resolver_match.url_name == 'add_trader' or request.resolver_match.url_name == 'add_transaction' %}active{% endif %}">
+             <img src="{% static 'icons/transaction_icon_2.svg' %}" width="24" height="24" alt="Add Product Icon">
+            الحسابات
           </a>
         </li>
         <li>
