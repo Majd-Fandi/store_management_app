@@ -11,8 +11,8 @@
  
 add success messages 
 add packages insert to insert_products 
-? change SYP small amount like 25 syp : 11025 => 11000 , 1950 => 2000 , 3200 => 3000
 
+? change SYP small amount like 25 syp : 11025 => 11000 , 1950 => 2000 , 3200 => 3000
 ? financial accounts with companies 
 ? connect the printer to the system 
 

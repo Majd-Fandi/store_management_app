@@ -38,7 +38,8 @@
             <th>إجمالي العناصر</th>
             <th>إجمالي السعر</th>
             <th>إجمالي السعر بالليرة</th>
-            <th style="text-align:center">الإجراءات</th>
+            <th>المبلغ الحقيقي</th>
+            <th>الإجراءات</th>
         </tr>
     </thead>
     <tbody>
@@ -49,6 +50,7 @@
                 <td>{{ data.total_items }}</td>
                 <td>{{ data.total_price }}</td>
                 <td>{{ data.total_price_syp|floatformat:0|intcomma }}</td>
+                <td>{{ data.sale.total_payable_price|floatformat:0|intcomma }}</td>
                 <td><a href="{% url 'sale_detail' data.sale.id %}">عرض التفاصيل</a></td>
             </tr>
         {% empty %}

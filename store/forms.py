@@ -1,11 +1,37 @@
 from django import forms
 from .models import Product ,Classification
 from django.utils import timezone
-
+from decimal import Decimal
 # --- هذا هو النموذج الجديد لصفحة الإضافة المجمعة ---
+
+from django import forms
+from .models import Product, Classification # Ensure you import Classification
+
+from django import forms
+from .models import Product, Classification
+
 class ProductBulkAddForm(forms.ModelForm):
-    
-    # تحويل حقل التصنيف إلى قائمة منسدلة
+    # 1. The Toggle
+    is_package = forms.BooleanField(
+        required=False, 
+        label="حزمة؟",
+        widget=forms.CheckboxInput(attrs={'class': 'is-package-checkbox'})
+    )
+
+    # 2. The Package Fields (Not saved to DB, just for calculation)
+    package_price = forms.DecimalField(
+        required=False, label="سعر الطرد",
+        widget=forms.NumberInput(attrs={'step': '0.01', 'class': 'pkg-field'})
+    )
+    items_per_package = forms.IntegerField(
+        required=False, label="عدد بداخلها",
+        widget=forms.NumberInput(attrs={'min': '1', 'class': 'pkg-field'})
+    )
+    num_of_packages = forms.IntegerField(
+        required=False, label="عدد الحزم",
+        widget=forms.NumberInput(attrs={'min': '1', 'class': 'pkg-field'})
+    )
+
     classification = forms.ModelChoiceField(
         queryset=Classification.objects.all(), 
         required=False, 
@@ -14,45 +40,117 @@ class ProductBulkAddForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        # لاحظ: لا يوجد 'additional_quantity'
         fields = [
             'name', 'price', 'quantity', 'description', 
             'classification', 'retail_sale_percent', 'whole_sale_percent'
         ]
-        labels = {
-            'name': 'المادة',
-            'price': 'السعر (التكلفة)',
-            'quantity': 'الكمية',
-            'description': 'الوصف',
-            'retail_sale_percent': 'نسبة ربح التجزئة %',
-            'whole_sale_percent': 'نسبة ربح الجملة %',
-        }
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'المادة'}),
-            'price': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
-            'quantity': forms.NumberInput(attrs={'min': '0'}),
-            'description': forms.Textarea(attrs={'rows': 2, 'placeholder': 'اختياري'}), 
+            # Note: We add specific classes to price/quantity to target them in JS
+            'price': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'class': 'unit-field'}),
+            'quantity': forms.NumberInput(attrs={'min': '0', 'class': 'unit-field'}),
+            'description': forms.Textarea(attrs={'rows': 1, 'placeholder': 'اختياري'}), 
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        # وضع القيم الافتراضية للنسب
         self.fields['retail_sale_percent'].initial = 5
         self.fields['whole_sale_percent'].initial = 3
-        
-        # جعل الحقول الاختيارية غير مطلوبة
-        self.fields['description'].required = False
-        self.fields['classification'].required = False
-        self.fields['retail_sale_percent'].required = False
-        self.fields['whole_sale_percent'].required = False
-
+        # Make standard fields required by default (we handle validation in clean)
+        self.fields['price'].required = False 
+        self.fields['quantity'].required = False
     def clean_name(self):
         # من الجيد دائماً تنظيف الاسم
         name = self.cleaned_data.get('name')
         if not name:
             raise forms.ValidationError('يجب إدخال المادة')
         return name.strip() # .strip() لإزالة المسافات الزائدة
+    def clean(self):
+        cleaned_data = super().clean()
+        is_package = cleaned_data.get('is_package')
+        
+        # Helper to get value or 0
+        def get_val(field): return cleaned_data.get(field) or 0
+
+        if is_package:
+            # --- PACKAGE CALCULATION LOGIC ---
+            pkg_price = get_val('package_price')
+            per_pkg = get_val('items_per_package')
+            num_pkgs = get_val('num_of_packages')
+
+            if pkg_price <= 0 or per_pkg <= 0 or num_pkgs <= 0:
+                raise forms.ValidationError("عند اختيار حزمة، يجب إدخال سعر الطرد العدد بداخلها، وعدد الحزم.")
+
+            # Calculate and overwrite the model fields
+            # Price per unit = Package Price / Items inside
+            final_price = float(pkg_price) / float(per_pkg)
+            # Total Quantity = Items inside * Num Packages
+            final_quantity = int(per_pkg * num_pkgs)
+
+            cleaned_data['price'] = round(final_price, 2)
+            cleaned_data['quantity'] = final_quantity
+
+        else:
+            # --- STANDARD ITEM LOGIC ---
+            price = cleaned_data.get('price')
+            quantity = cleaned_data.get('quantity')
+
+            if price is None or quantity is None:
+                 raise forms.ValidationError("الرجاء إدخال السعر المفرد والكمية، أو اختيار 'حزمة'.")
+
+        self.clean_name()
+        return cleaned_data
+    
+# class ProductBulkAddForm(forms.ModelForm):
+    
+#     # تحويل حقل التصنيف إلى قائمة منسدلة
+#     classification = forms.ModelChoiceField(
+#         queryset=Classification.objects.all(), 
+#         required=False, 
+#         label="التصنيف"
+#     )
+
+#     class Meta:
+#         model = Product
+#         # لاحظ: لا يوجد 'additional_quantity'
+#         fields = [
+#             'name', 'price', 'quantity', 'description', 
+#             'classification', 'retail_sale_percent', 'whole_sale_percent'
+#         ]
+#         labels = {
+#             'name': 'المادة',
+#             'price': 'السعر (التكلفة)',
+#             'quantity': 'الكمية',
+#             'description': 'الوصف',
+#             'retail_sale_percent': 'نسبة ربح التجزئة %',
+#             'whole_sale_percent': 'نسبة ربح الجملة %',
+#         }
+#         widgets = {
+#             'name': forms.TextInput(attrs={'placeholder': 'المادة'}),
+#             'price': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+#             'quantity': forms.NumberInput(attrs={'min': '0'}),
+#             'description': forms.Textarea(attrs={'rows': 2, 'placeholder': 'اختياري'}), 
+#         }
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+        
+#         # وضع القيم الافتراضية للنسب
+#         self.fields['retail_sale_percent'].initial = 5
+#         self.fields['whole_sale_percent'].initial = 3
+        
+#         # جعل الحقول الاختيارية غير مطلوبة
+#         self.fields['description'].required = False
+#         self.fields['classification'].required = False
+#         self.fields['retail_sale_percent'].required = False
+#         self.fields['whole_sale_percent'].required = False
+
+    # def clean_name(self):
+    #     # من الجيد دائماً تنظيف الاسم
+    #     name = self.cleaned_data.get('name')
+    #     if not name:
+    #         raise forms.ValidationError('يجب إدخال المادة')
+    #     return name.strip() # .strip() لإزالة المسافات الزائدة
     
 class ProductForm(forms.ModelForm):
     description = forms.CharField(

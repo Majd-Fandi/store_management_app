@@ -59,6 +59,13 @@
           </a>
         </li>
         <li>
+          <a href="{% url 'financial_box' %}" 
+             class="{% if request.resolver_match.url_name == 'financial_box' %}active{% endif %}">
+             <img src="{% static 'icons/drawer_icon.svg' %}" width="24" height="24" alt="Add Product Icon">
+             الصندوق
+          </a>
+        </li>
+        <li>
           <a href="{% url 'settings' %}" 
              class="{% if request.resolver_match.url_name == 'settings' %}active{% endif %}">
              <img src="{% static 'icons/settings_icon.svg' %}" width="24" height="24" alt="Settings Icon">

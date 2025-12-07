@@ -42,7 +42,11 @@
 </table>
 
 <button type="button" class="btn red" id="open-delete-modal">حذف عملية البيع</button>
-
+<button class="btn green">
+    <a href={% url 'print_receipt' sale.id %}>
+        طباعة الفاتورة
+    </a>
+</button>
 <div id="delete-modal" class="modal">
     <div class="modal-content">
         <p>هل تريد حذف عملية البيع ؟</p>

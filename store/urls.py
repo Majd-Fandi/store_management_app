@@ -3,6 +3,7 @@ from . import views
 handler404 = views.custom_404
 
 urlpatterns = [
+    path('print_receipt/<int:serial_number>/', views.print_receipt, name='print_receipt'),
     path('', views.product_list, name='home'),
 
     path('products', views.product_list, name='product_list'),
@@ -33,6 +34,8 @@ urlpatterns = [
     path('traders/', views.trader_list, name='trader_list'),
     path('traders/add/', views.add_trader, name='add_trader'),
     path('traders/<int:pk>/', views.trader_detail, name='trader_detail'),
+    path('financial-box', views.financial_box, name='financial_box'),
+
     
     # Transaction URLs
     path('traders/<int:trader_pk>/add_transaction/', 

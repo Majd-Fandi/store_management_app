@@ -87,13 +87,18 @@
       </table>
 
       <div id="cartSummary" class="cart-summary">
-        <p>المجموع الكلي $ : <span id="cartTotalPrice" style="font-weight: bold;">0.00</span></p>
-        <p>المجموع الكلي بالليرة السورية : <span id="cartTotalSypPrice" style="font-weight: bold;">0</span></p>
-        <p>صافي الربح $ : <span id="cartTotalProfit" style="font-weight: bold;">0</span></p>
-        <p>صافي الربح بالليرة السورية : <span id="cartTotalSypProfit" style="font-weight: bold;">0</span></p>
+        <p>المجموع الكلي : <span id="cartTotalPrice" style="font-weight: bold;">0.00</span> $ </p>
+        <p>صافي الربح : <span id="cartTotalProfit" style="font-weight: bold;">0</span> $ </p>
+        <hr style="border:1px dashed; margin:10px 0;">
+        <p>المجموع الكلي : <span id="cartTotalSypPrice" style="font-weight: bold;">0</span> SYP</p>
+        <p>صافي الربح : <span id="cartTotalSypProfit" style="font-weight: bold;">0</span> SYP</p>
+        <hr style="border:1px dashed; margin:10px 0;">
+        <p>المجموع (رقم قابل للدفع) : <span id="cartAprTotalSypPrice" style="font-weight: bold;">0</span> SYP</p>
+
         <form method="post" id="sellForm" action="{% url 'sell_product' %}" style="text-align: center;">
           {% csrf_token %}
           <input type="hidden" name="cart_data" id="cartDataInput">
+          <input type="hidden" name="payablePrice" id="payablePriceInput">
           <button type="submit" class="btn blue">بيع</button>
         </form>
       </div>

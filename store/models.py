@@ -48,8 +48,8 @@ class Product(models.Model):
 
 class Sale(models.Model):
     date = models.DateField(default=timezone.now)
-    products = models.ManyToManyField(Product, through='SaleItem') 
-
+    products = models.ManyToManyField(Product, through='SaleItem')
+    total_payable_price=models.PositiveIntegerField(null=True,blank=True)
     def __str__(self):
         return f"Sale on {self.date.strftime('%Y-%m-%d %H:%M:%S')}"
 
@@ -197,3 +197,7 @@ class Transaction(models.Model):
 
     # Note: For production use, you would also need to implement delete() and update 
     # logic to reverse the balance changes correctly.
+
+
+class FinancialBox(models.Model):
+    current_amount = models.BigIntegerField(default=0)

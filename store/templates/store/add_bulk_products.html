@@ -4,9 +4,209 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'store/insert_products.css' %}">
 
+<style>
+    /* Minimal styling for the new columns to keep table organized */
+    .pkg-section {
+        background-color: #f0f8ff; /* Light blue for package fields */
+        border-left: 2px solid #ccc;
+        border-right: 2px solid #ccc;
+    }
+    .formset-table th {
+        text-align: center;
+        font-size: 0.9rem;
+    }
+    /* Ensure inputs fit in cells */
+    .formset-table input[type="number"] {
+        width: 100%;
+        min-width: 60px;
+    }
+    input:disabled {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+</style>
+
+<div class="form-container">
+    <a href="{% url 'add_product' %}" class="back-link">&rarr; رجوع</a>
+
+    <h2 class="form-title">إضافة منتجات جديدة</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ formset.management_form }}
+
+        <div class="table-wrapper">
+            <table class="formset-table" id="product-formset-table">
+                <thead>
+                    <tr>
+                        <th>المادة</th>
+                        
+                        <th style="min-width: 80px;">السعر (مفرد)</th>
+                        <th style="min-width: 80px;">الكمية (الكل)</th>
+
+                        <th class="pkg-section">حزمة؟</th>
+                        <th class="pkg-section">سعر الطرد</th>
+                        <th class="pkg-section">عدد القطع / طرد</th>
+                        <th class="pkg-section">عدد الطرود</th>
+
+                        <th>التصنيف</th>
+                        <th>% ربح تجزئة</th>
+                        <th>% ربح جملة</th>
+                        <th>حذف</th>
+                    </tr>
+                </thead>
+                <tbody id="formset-body">
+                    {% for form in formset %}
+                        <tr class="product-form">
+                            <td data-label="المادة">{{ form.name.errors }}{{ form.name }}</td>
+
+                            <td data-label="السعر (مفرد)">{{ form.price.errors }}{{ form.price }}</td>
+                            <td data-label="الكمية (الكل)">{{ form.quantity.errors }}{{ form.quantity }}</td>
+
+                            <td class="pkg-section" style="text-align: center;">
+                                {{ form.is_package }}
+                            </td>
+                            <td class="pkg-section">{{ form.package_price }}</td>
+                            <td class="pkg-section">{{ form.items_per_package }}</td>
+                            <td class="pkg-section">{{ form.num_of_packages }}</td>
+
+                            <td data-label="التصنيف">{{ form.classification }}</td>
+                            <td data-label="% ربح التجزئة">{{ form.retail_sale_percent }}</td>
+                            <td data-label="% ربح الجملة">{{ form.whole_sale_percent }}</td>
+                            <td class="delete-checkbox-cell">{{ form.DELETE }}</td> 
+                        </tr>
+                        {% if form.non_field_errors %}
+                        <tr><td colspan="11" style="color:red;">{{ form.non_field_errors }}</td></tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <br>
+        <div class="form-buttons">
+            <button type="button" id="add-row-btn" class="btn blue"><span class="plus-sign">+</span> إضافة سطر جديد</button>
+            <button type="submit" class="btn green">حفظ المنتجات</button>
+        </div>
+    </form>
+</div> 
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        
+        const addRowBtn = document.getElementById("add-row-btn");
+        const formsetBody = document.getElementById("formset-body");
+        const formsetPrefix = "{{ formset.prefix }}"; 
+        const totalFormsInput = document.getElementById(`id_${formsetPrefix}-TOTAL_FORMS`);
+
+        // --- Logic to Enable/Disable fields based on Checkbox ---
+        function updateRowState(row) {
+            // Find inputs within this specific row
+            const checkbox = row.querySelector('.is-package-checkbox');
+            const unitFields = row.querySelectorAll('.unit-field'); // price, quantity
+            const pkgFields = row.querySelectorAll('.pkg-field');   // package_price, items_per_pkg, num_pkgs
+
+            if (checkbox.checked) {
+                // Package Mode: Disable Unit fields, Enable Package fields
+                unitFields.forEach(el => {
+                    el.readOnly = true; 
+                    el.style.backgroundColor = "#e9ecef";
+                    el.value = ""; // Clear unit fields to avoid confusion (optional)
+                    el.placeholder = "تلقائي";
+                });
+                pkgFields.forEach(el => {
+                    el.disabled = false;
+                    el.style.backgroundColor = "white";
+                });
+            } else {
+                // Item Mode: Enable Unit fields, Disable Package fields
+                unitFields.forEach(el => {
+                    el.readOnly = false;
+                    el.style.backgroundColor = "white";
+                    el.placeholder = "";
+                });
+                pkgFields.forEach(el => {
+                    el.disabled = true;
+                    el.value = ""; // Clear package fields
+                    el.style.backgroundColor = "#e9ecef";
+                });
+            }
+        }
+
+        // Initialize existing rows
+        formsetBody.querySelectorAll(".product-form").forEach(row => {
+            updateRowState(row);
+            // Add change listener to the checkbox
+            const checkbox = row.querySelector('.is-package-checkbox');
+            checkbox.addEventListener('change', () => updateRowState(row));
+        });
+
+        // --- Add New Row Logic ---
+        addRowBtn.addEventListener("click", function() {
+            const lastRow = formsetBody.querySelector(".product-form:last-child");
+            // If there are no rows (e.g. after deletion), you might need a hidden template, 
+            // but assuming at least one row exists:
+            const newRow = lastRow.cloneNode(true); 
+
+            let currentFormCount = parseInt(totalFormsInput.value);
+            
+            // Regex to update indexes
+            const nameRegex = new RegExp(`${formsetPrefix}-(\\d+)-`);
+            const idRegex = new RegExp(`id_${formsetPrefix}-(\\d+)-`);
+
+            newRow.querySelectorAll("input, select, textarea").forEach(function(element) {
+                // Update Name and ID
+                if (element.name) element.name = element.name.replace(nameRegex, `${formsetPrefix}-${currentFormCount}-`);
+                if (element.id) element.id = element.id.replace(idRegex, `id_${formsetPrefix}-${currentFormCount}-`);
+                
+                // Clear Values
+                if (element.type === 'checkbox') {
+                    element.checked = false;
+                } else if (element.name.includes('retail_sale_percent')) {
+                    element.value = 5;
+                } else if (element.name.includes('whole_sale_percent')) {
+                    element.value = 3;
+                } else {
+                    element.value = "";
+                }
+            });
+            
+            // Remove error messages
+            newRow.querySelectorAll(".errorlist").forEach(e => e.remove());
+            newRow.querySelectorAll(".non-field-errors").forEach(e => e.remove());
+            
+            // Append and Update Count
+            formsetBody.appendChild(newRow);
+            totalFormsInput.value = currentFormCount + 1;
+
+            // Re-apply logic to the new row
+            updateRowState(newRow);
+            const newCheckbox = newRow.querySelector('.is-package-checkbox');
+            newCheckbox.addEventListener('change', () => updateRowState(newRow));
+        });
+    });
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+{% comment %} {% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'store/insert_products.css' %}">
+
 
 
 <div class="form-container">
+    <a href="{% url 'add_product' %}" class="back-link">&rarr; رجوع</a>
 
     <h2 class="form-title">إضافة منتجات جديدة</h2>
     <form method="POST">
@@ -24,7 +224,7 @@
                         <th>التصنيف</th>
                         <th>ربح المفرق % </th>
                         <th>ربح الجملة % </th>
-                        {% comment %} <th>الوصف</th> {% endcomment %}
+                        <th>الوصف</th>
                         <th>تجاهل</th>
                     </tr>
                 </thead>
@@ -37,7 +237,7 @@
                             <td data-label="التصنيف">{{ form.classification.errors }}{{ form.classification }}</td>
                             <td data-label="% ربح التجزئة">{{ form.retail_sale_percent.errors }}{{ form.retail_sale_percent }}</td>
                             <td data-label="% ربح الجملة">{{ form.whole_sale_percent.errors }}{{ form.whole_sale_percent }}</td>
-                            {% comment %} <td data-label="الوصف">{{ form.description.errors }}{{ form.description }}</td> {% endcomment %}
+                            <td data-label="الوصف">{{ form.description.errors }}{{ form.description }}</td>
                             <td class="delete-checkbox-cell">{{ form.DELETE }}</td> 
                         </tr>
                     {% endfor %}
@@ -118,4 +318,4 @@
     });
 </script>
 
-{% endblock %}
+{% endblock %} {% endcomment %}

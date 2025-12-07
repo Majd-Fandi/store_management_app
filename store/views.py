@@ -19,7 +19,7 @@ import json
 import pandas as pd
 
 # Local Application/Project Imports
-from .models import Product, Settings, Sale, SaleItem, Classification
+from .models import Product, Settings, Sale, SaleItem, Classification,FinancialBox
 from .forms import ProductBulkAddForm, ProductForm, DateRangeForm
 
 # =======================================================================================
@@ -47,6 +47,10 @@ def product_list(request):
     # Fetch all products initially
     # products = Product.objects.all()
     products = Product.objects.filter(is_active=True)
+
+    # store_products_price = products.aggregate(
+    #     total=Sum(F('quantity') * F('price'))
+    # )['total'] or 0
     # Fetch all classifications 
     classifications = Classification.objects.all()
 
@@ -82,6 +86,7 @@ def product_list(request):
         'store/product_list.html',
         {
             'products': products,
+            # 'store_products_price':store_products_price,
             'classifications':classifications,
             'search_query': search_query,
             'quantity_filter': quantity_filter,
@@ -143,7 +148,6 @@ def remove_classification(request, classification_id):
 # =======================================================================================
 # =======================================================================================
 # =======================================================================================
-
 
 def add_product(request):
     if request.method == "POST":
@@ -378,6 +382,7 @@ def sell_product(request):
 
     if request.method == 'POST':
         cart_data = request.POST.get('cart_data')
+        payable_price=request.POST.get('payablePrice')
         
         # Ensure cart data is valid
         if not cart_data:
@@ -392,8 +397,16 @@ def sell_product(request):
             total_price = Decimal(0)
 
             # Create a new Sale instance
-            sale = Sale.objects.create()
+            # sale = Sale.objects.create()
+            sale = Sale.objects.create(
+                total_payable_price=payable_price
+            )
             serial_number=sale.id  # You can add a date or other fields if needed
+            box = FinancialBox.objects.get() 
+    
+    # Use F() expression to perform atomic update (highly recommended for concurrency)
+            box.current_amount = F('current_amount') + payable_price 
+            box.save()
 
             for item in cart:
                 product_id = item['productId']
@@ -425,6 +438,7 @@ def sell_product(request):
 
             return render(request, 'store/sell_success.html', {
                 'cart': cart,
+                'payablePrice':payable_price,
                 'serial_number':serial_number,
                 'total_price': total_price,
                 'total_syp_price': total_syp_price
@@ -1127,6 +1141,28 @@ def add_transaction(request, trader_pk):
             transaction = form.save(commit=False)
             transaction.trader = trader
             transaction.save() # The save method updates the trader balance
+# ⭐️ NEW BOX UPDATE LOGIC ⭐️
+            
+            # Check if the transaction is a PAYMENT (Cash is leaving the store)
+            if transaction.transaction_type == Transaction.TransactionType.PAYMENT:
+                try:
+                    # Retrieve the single FinancialBox instance
+                    box = FinancialBox.objects.get() 
+                    
+                    # Atomically decrease the box amount by the transaction amount
+                    # Using F() is crucial to prevent race conditions.
+                    box.current_amount = F('current_amount') - transaction.amount
+                    box.save(update_fields=['current_amount'])
+                    
+                    # Optional: Check if the amount went negative (cash shortage)
+                    # For simple logic, we rely on the database, but a proper check 
+                    # should be done client-side or before saving to prevent overdrawing.
+                    
+                except FinancialBox.DoesNotExist:
+                    # Log or handle the error if the FinancialBox object is missing
+                    print("Error: FinancialBox object not found.")
+                
+            # ⭐️ END BOX UPDATE LOGIC ⭐️
             return redirect('trader_detail', pk=trader.pk)
     else:
         form = TransactionForm()
@@ -1136,3 +1172,156 @@ def add_transaction(request, trader_pk):
         'trader': trader,
     }
     return render(request, 'store/traders/add_transaction.html', context)
+
+
+
+
+
+
+
+
+
+
+
+# store/views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Sale, SaleItem, Settings # Import your models
+from .printer_utils import print_receipt_usb # Import the utility we made
+
+
+# from deep_translator import GoogleTranslator
+
+# def translate_to_english(text):
+#     """Translate Arabic text to English"""
+#     try:
+#         translator = GoogleTranslator(source='ar', target='en')
+#         return translator.translate(text)
+#     except Exception as e:
+#         print(f"Translation error: {e}")
+#         return text  # Return original if translation fails
+
+# def print_receipt(request, serial_number):
+#     sale = get_object_or_404(Sale, id=serial_number)
+#     sale_items = SaleItem.objects.filter(sale=sale)
+    
+#     printer_items = []
+    
+#     for item in sale_items:
+#         # Auto-translate to English
+#         english_name = translate_to_english(item.product.name)
+        
+#         syp_unit_price = item.price_at_sale * item.dollar_rate_at_sale
+#         total_syp_line = syp_unit_price * item.quantity
+        
+#         printer_items.append({
+#             'product_name': english_name,
+#             'quantity': item.quantity,
+#             'total_price': total_syp_line
+#         })
+#     # Format the final payable price
+#     # Assuming total_payable_price in Sale model is already in SYP 
+#     # (Based on your template {{payablePrice|intcomma}})
+#     # payable_display = "{:,}".format(sale.total_payable_price)
+#     payable_display = sale.total_payable_price
+#     date_display = sale.date.strftime("%Y-%m-%d")
+
+#     # 4. Trigger the Print
+#     success, msg = print_receipt_usb(
+#         serial_number=serial_number,
+#         cart_items=printer_items,
+#         total_payable=payable_display,
+#         date_str=date_display
+#     )
+
+#     if success:
+#         messages.success(request, "تمت الطباعة بنجاح")
+#     else:
+#         messages.error(request, f"خطأ في الطباعة: {msg}")
+
+#     # Redirect back to home or wherever you prefer
+#     return redirect('home')
+    # ... rest of your code
+def print_receipt(request, serial_number):
+    # 1. Fetch the Sale
+    sale = get_object_or_404(Sale, id=serial_number)
+    
+    # 2. Fetch the Items associated with this sale
+    sale_items = SaleItem.objects.filter(sale=sale)
+    
+    # 3. Prepare data for the printer
+    # We need to calculate the SYP price per line item based on the stored data
+    printer_items = []
+    
+    for item in sale_items:
+        # Calculate Total SYP for this line: 
+        # (Price USD * Rate) * Quantity
+        syp_unit_price = item.price_at_sale * item.dollar_rate_at_sale
+        total_syp_line = syp_unit_price * item.quantity
+        
+        printer_items.append({
+            'product_name': item.product.name,
+            'quantity': item.quantity,
+            'total_price': total_syp_line
+        })
+
+    # Format the final payable price
+    # Assuming total_payable_price in Sale model is already in SYP 
+    # (Based on your template {{payablePrice|intcomma}})
+    # payable_display = "{:,}".format(sale.total_payable_price)
+    payable_display = sale.total_payable_price
+    # date_display = sale.date.strftime("%Y-%m-%d")
+    # Current date and time with AM/PM format
+    # Example: "2025-12-05 04:52 PM"
+    date_display = datetime.now().strftime("%Y-%m-%d %I:%M %p")
+
+
+    # 4. Trigger the Print
+    success, msg = print_receipt_usb(
+        serial_number=serial_number,
+        cart_items=printer_items,
+        total_payable=payable_display,
+        date_str=date_display
+
+    )
+
+    if success:
+        messages.success(request, "تمت الطباعة بنجاح")
+    else:
+        messages.error(request, f"خطأ في الطباعة: {msg}")
+
+    # Redirect back to home or wherever you prefer
+    return redirect('home')
+
+
+
+
+from django.utils import timezone
+def financial_box(request):
+    products = Product.objects.filter(is_active=True)
+    box = FinancialBox.objects.all().first()
+    current_box_value=box.current_amount
+    today = timezone.localdate()
+    total_sales_today = Sale.objects.filter(
+        date=today
+    ).aggregate(
+        total=Sum('total_payable_price')
+    )['total'] or 0
+
+    dollar_rate = Settings.objects.filter(key='dollar_rate').first().value
+
+    store_products_price = products.aggregate(
+        total=Sum(F('quantity') * F('price'))
+    )['total'] or 0
+
+    store_products_price_syp=store_products_price*dollar_rate
+    return render(
+        request,
+        'store/financial_box.html',
+        {
+            'current_box_value':current_box_value,
+            'store_products_price':store_products_price,
+            'store_products_price_syp':store_products_price_syp,
+            'total_sales_today':total_sales_today,
+        },
+    )

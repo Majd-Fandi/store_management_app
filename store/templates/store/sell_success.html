@@ -9,15 +9,15 @@
     <a href="{% url 'home' %}">رجوع إلى الصفحة الرئيسية</a>
 </button>
 <button class="btn green">
-    <a href="{% url 'home' %}">
+    <a href={% url 'print_receipt' serial_number %}>
         طباعة الفاتورة
     </a>
 </button>
-{% comment %} <p class="success">✔ لقد قمت ببيع المنتجات التالية :</p> {% endcomment %}
+
 <div class="container">
     <h2>فاتورة شراء</h2>
     <hr>
- <div class="bill-details">
+    <div class="bill-details">
     <p class="serial-number"><strong>رقم الفاتورة : </strong>{{ serial_number }} #</p>
     <p class="bill-date"><strong>التاريخ : </strong> {% now "d/m/Y" %}</p>
     <p class="bill-time"><strong>الساعة : </strong> {% now "g:i A" %}</p>
@@ -28,7 +28,6 @@
             <tr>
                 <th>المنتج</th>
                 <th>الكمية</th>
-                <th>السعر $</th>
                 <th>السعر SYP</th>
             </tr>
         </thead>
@@ -37,14 +36,12 @@
             <tr>
                 <td>{{ item.productName }}</td>
                 <td>{{ item.quantity }}</td>
-                <td>{{ item.totalPrice|floatformat:2 }}</td>
                 <td>{{ item.totalSypPrice|floatformat:0|intcomma }}</td>
         </tr>
         {% endfor %}
         <tr class="total-row">
             <td colspan="2" style="text-align:center"><strong>المجموع الكلي</strong></td>
-            <td><strong>{{ total_price|floatformat:2 }}</strong></td>
-            <td><strong>{{ total_syp_price|floatformat:0|intcomma }}</strong></td>
+            <td><strong>{{payablePrice|intcomma}}</strong></td>
         </tr>
     </tbody>
 </table>

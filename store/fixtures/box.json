@@ -1,0 +1,10 @@
+[
+    {
+        "model": "store.financialbox",
+        "pk": 1,
+        "fields": {
+            "current_amount": "0"
+           
+        }
+    }
+]
