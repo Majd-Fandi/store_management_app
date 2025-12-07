@@ -13,7 +13,7 @@ REM We use 'cmd /k' and a title to keep the console window open.
 REM This allows you to monitor the Waitress warnings/logs.
 echo.
 echo Starting Waitress server (A new console window will open)...
-cd /d "C:\majd\Github Clone\store_management_app"
+cd /d "C:\majd\tarek\store_management_app"
 
 start "Waitress Server" cmd /k "call venv\Scripts\activate.bat && python run_server.py"
 
