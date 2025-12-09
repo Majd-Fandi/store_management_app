@@ -19,11 +19,6 @@ try:
     
     print("✅ Connection Successful!")
     p.text("Majd Yousif Fandi \n")
-    # p.text("TEST RECEIPT SUCCESS via VERIFIED DIRECT USB\n")
-    # p.text("TEST RECEIPT SUCCESS via VERIFIED DIRECT USB\n")
-    # p.text("TEST RECEIPT SUCCESS via VERIFIED DIRECT USB\n")
-    # p.text("TEST RECEIPT SUCCESS via VERIFIED DIRECT USB\n")
-    # p.text("TEST RECEIPT SUCCESS via VERIFIED DIRECT USB\n")
     p.cut()
     
     print("✅ Print command sent successfully.")

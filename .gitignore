@@ -1,1 +1,17 @@
 venv/
+
+# Django specific
+*.log
+*.pot
+*.pyc
+__pycache__/
+staticfiles/
+
+# Migrations (except init)
+*/migrations/*.py
+!*/migrations/__init__.py
+*/migrations/*.pyc
+
+# VS Code
+.vscode/
+*.code-workspace
