@@ -73,6 +73,8 @@ def product_list(request):
     if classification_filter:
         if classification_filter=="no-category":
             products=products.filter(classification=None) # no classification 
+        elif classification_filter=="weight-category":
+            products=products.filter(is_weight=True) # no classification 
         else:
             products = products.filter(classification=classification_filter)
 
@@ -148,6 +150,129 @@ def remove_classification(request, classification_id):
 # =======================================================================================
 # =======================================================================================
 # =======================================================================================
+# def add_product(request):
+#     if request.method == "POST":
+        
+#         # --- 1. Get All POST Data ---
+#         name = request.POST.get('name')
+#         product_type = request.POST.get('type') # Renamed 'type' to 'product_type' to avoid shadowing built-in 'type'
+#         items_per_package_str = request.POST.get('items_per_package')
+#         description = request.POST.get('description')
+#         price_str = request.POST.get('price')
+#         quantity_str = request.POST.get('quantity')
+#         classification_id = request.POST.get('classification')
+#         is_weight = product_type == 'weight'
+#         retail_sale_percent = request.POST.get('retail_sale_percent')
+#         whole_sale_percent = request.POST.get('whole_sale_percent')
+
+#         if not retail_sale_percent:
+#             retail_sale_percent = 5
+#         if not whole_sale_percent:
+#             whole_sale_percent = 3
+            
+#         # Helper to simplify error rendering
+#         def render_error(error_message):
+#             return render(request, 'store/add_product.html', {
+#                 'error': error_message,
+#                 'classifications': Classification.objects.all()
+#             })
+
+#         # --- 2. Basic Validation & Type Conversion ---
+#         if not all([name, price_str, quantity_str]):
+#             return render_error('الرجاء تعبئة الحقول المطلوبة (المادة و السعر و الكمية)')
+        
+#         try:
+#             entered_price = float(price_str)
+#         except ValueError:
+#             return render_error('السعر يجب أن يكون رقماً صالحاً')
+
+#         # --- 3. Handle Different Product Types ---
+#         final_price_per_unit = entered_price
+#         final_quantity_of_items = 0  # Will be calculated differently based on type
+
+#         if product_type == "many":
+#             if not items_per_package_str:
+#                 return render_error('يرجى تحديد عدد القطع في الطرد')
+            
+#             try:
+#                 items_per_package = int(items_per_package_str)
+#                 if items_per_package <= 0:
+#                     raise ValueError
+#                 entered_quantity = int(quantity_str)
+#                 if entered_quantity <= 0:
+#                     raise ValueError
+#             except ValueError:
+#                 return render_error('عدد القطع في الطرد والكمية يجب أن يكونا رقمين صحيحين وموجبين')
+
+#             # Calculation for the database:
+#             # Price per piece = Package Price / Items per Package
+#             final_price_per_unit = entered_price / items_per_package
+            
+#             # Total quantity of items = Number of Packages * Items per Package
+#             final_quantity_of_items = entered_quantity * items_per_package
+
+#         elif product_type == "weight":
+#             try:
+#                 # Allow decimal values for weight
+#                 entered_quantity = float(quantity_str)
+#                 if entered_quantity <= 0:
+#                     raise ValueError
+#             except ValueError:
+#                 return render_error('الكمية (Kg) يجب أن يكون رقماً موجباً')
+
+#             # For weight, convert to grams (or keep as kg depending on your needs)
+#             # Option 1: Store in grams (multiply by 1000)
+#             final_quantity_of_items = int(entered_quantity * 1000)  # Convert kg to grams
+            
+#             # Price per gram (or per kg depending on your business logic)
+#             # If price is entered per kg, store price per gram
+#             final_price_per_unit = entered_price / 1000  # Price per gram
+            
+#             # Option 2: Store in kg with decimal
+#             # final_quantity_of_items = entered_quantity  # Store as decimal kg
+#             # final_price_per_unit = entered_price  # Price per kg
+
+#         else:  # product_type == "one" (مفرد)
+#             try:
+#                 entered_quantity = int(quantity_str)
+#                 if entered_quantity <= 0:
+#                     raise ValueError
+#             except ValueError:
+#                 return render_error('الكمية (عدد القطع) يجب أن يكون رقماً صحيحاً وموجباً')
+            
+#             final_quantity_of_items = entered_quantity
+#             final_price_per_unit = entered_price
+
+#         # --- 4. Handle Classification Lookup ---
+#         classification = None
+#         if classification_id:
+#             try:
+#                 # Fetch the Classification instance using the ID
+#                 classification = Classification.objects.get(id=classification_id)
+#             except Classification.DoesNotExist:
+#                 return render_error('التصنيف المحدد غير صحيح')
+
+#         # --- 5. Create Product in Database ---
+#         Product.objects.create(
+#             is_weight=is_weight,
+#             name=name,
+#             description=description,
+#             price=final_price_per_unit,          # Store the calculated price per single item
+#             quantity=final_quantity_of_items,    # Store the calculated total quantity
+#             classification=classification,        # Pass the Classification instance or None
+#             retail_sale_percent=retail_sale_percent,
+#             whole_sale_percent=whole_sale_percent
+#         )
+        
+#         return redirect('add_product')
+        
+#     # --- GET Request ---
+#     return render(request, 'store/add_product.html', {
+#         'classifications': Classification.objects.all()
+#     })
+
+from django.db import IntegrityError
+from django.db import transaction
 
 def add_product(request):
     if request.method == "POST":
@@ -160,7 +285,7 @@ def add_product(request):
         price_str = request.POST.get('price')
         quantity_str = request.POST.get('quantity')
         classification_id = request.POST.get('classification')
-
+        is_weight = product_type == 'weight'
         retail_sale_percent = request.POST.get('retail_sale_percent')
         whole_sale_percent = request.POST.get('whole_sale_percent')
 
@@ -168,11 +293,13 @@ def add_product(request):
             retail_sale_percent = 5
         if not whole_sale_percent:
             whole_sale_percent = 3
+            
         # Helper to simplify error rendering
         def render_error(error_message):
             return render(request, 'store/add_product.html', {
                 'error': error_message,
-                'classifications': Classification.objects.all()
+                'classifications': Classification.objects.all(),
+                'form_data': request.POST  # Pass form data back to preserve user input
             })
 
         # --- 2. Basic Validation & Type Conversion ---
@@ -181,15 +308,13 @@ def add_product(request):
         
         try:
             entered_price = float(price_str)
-            entered_quantity = int(quantity_str)
         except ValueError:
-            return render_error('السعر والكمية يجب أن تكون أرقامًا صالحة')
+            return render_error('السعر يجب أن يكون رقماً صالحاً')
 
-        # Variables to store the final, calculated values for the database
+        # --- 3. Handle Different Product Types ---
         final_price_per_unit = entered_price
-        final_quantity_of_items = entered_quantity
+        final_quantity_of_items = 0  # Will be calculated differently based on type
 
-        # --- 3. Handle 'many' (Package) Scenario ---
         if product_type == "many":
             if not items_per_package_str:
                 return render_error('يرجى تحديد عدد القطع في الطرد')
@@ -198,8 +323,11 @@ def add_product(request):
                 items_per_package = int(items_per_package_str)
                 if items_per_package <= 0:
                     raise ValueError
+                entered_quantity = int(quantity_str)
+                if entered_quantity <= 0:
+                    raise ValueError
             except ValueError:
-                return render_error('عدد القطع في الطرد يجب أن يكون رقمًا صحيحًا وموجبًا')
+                return render_error('عدد القطع في الطرد والكمية يجب أن يكونا رقمين صحيحين وموجبين')
 
             # Calculation for the database:
             # Price per piece = Package Price / Items per Package
@@ -207,10 +335,38 @@ def add_product(request):
             
             # Total quantity of items = Number of Packages * Items per Package
             final_quantity_of_items = entered_quantity * items_per_package
-        
-        # If product_type is "one", final_price_per_unit and final_quantity_of_items
-        # already hold the entered_price and entered_quantity, so no change is needed.
 
+        elif product_type == "weight":
+            try:
+                # Allow decimal values for weight
+                entered_quantity = float(quantity_str)
+                if entered_quantity <= 0:
+                    raise ValueError
+            except ValueError:
+                return render_error('الكمية (Kg) يجب أن يكون رقماً موجباً')
+
+            # For weight, convert to grams (or keep as kg depending on your needs)
+            # Option 1: Store in grams (multiply by 1000)
+            final_quantity_of_items = int(entered_quantity * 1000)  # Convert kg to grams
+            
+            # Price per gram (or per kg depending on your business logic)
+            # If price is entered per kg, store price per gram
+            final_price_per_unit = entered_price / 1000  # Price per gram
+            
+            # Option 2: Store in kg with decimal
+            # final_quantity_of_items = entered_quantity  # Store as decimal kg
+            # final_price_per_unit = entered_price  # Price per kg
+
+        else:  # product_type == "one" (مفرد)
+            try:
+                entered_quantity = int(quantity_str)
+                if entered_quantity <= 0:
+                    raise ValueError
+            except ValueError:
+                return render_error('الكمية (عدد القطع) يجب أن يكون رقماً صحيحاً وموجباً')
+            
+            final_quantity_of_items = entered_quantity
+            final_price_per_unit = entered_price
 
         # --- 4. Handle Classification Lookup ---
         classification = None
@@ -221,17 +377,31 @@ def add_product(request):
             except Classification.DoesNotExist:
                 return render_error('التصنيف المحدد غير صحيح')
 
-        # --- 5. Create Product in Database ---
-        Product.objects.create(
-            name=name,
-            description=description,
-            price=final_price_per_unit,          # Store the calculated price per single item
-            quantity=final_quantity_of_items,    # Store the calculated total quantity of single items
-            classification=classification,        # Pass the Classification instance or None
-            # tareek
-            retail_sale_percent=retail_sale_percent,
-            whole_sale_percent=whole_sale_percent
-        )
+        # --- 5. Check if product name already exists (OPTIONAL - for better UX) ---
+        # This check is optional since the database constraint will catch it,
+        # but it provides a better user experience with a cleaner error message
+        if Product.objects.filter(name=name).exists():
+            return render_error(f'المادة "{name}" موجودة مسبقاً في النظام. الرجاء استخدام اسم مختلف.')
+
+        # --- 6. Create Product in Database ---
+        try:
+            Product.objects.create(
+                is_weight=is_weight,
+                name=name,
+                description=description,
+                price=final_price_per_unit,          # Store the calculated price per single item
+                quantity=final_quantity_of_items,    # Store the calculated total quantity
+                classification=classification,        # Pass the Classification instance or None
+                retail_sale_percent=retail_sale_percent,
+                whole_sale_percent=whole_sale_percent
+            )
+        except IntegrityError as e:
+            # Catch the database-level unique constraint violation
+            if 'name' in str(e) or 'unique' in str(e).lower():
+                return render_error(f'المادة "{name}" موجودة مسبقاً في النظام. الرجاء استخدام اسم مختلف.')
+            else:
+                # For other database errors
+                return render_error('حدث خطأ في قاعدة البيانات. الرجاء المحاولة مرة أخرى.')
         
         return redirect('add_product')
         
@@ -239,6 +409,105 @@ def add_product(request):
     return render(request, 'store/add_product.html', {
         'classifications': Classification.objects.all()
     })
+# def add_product(request):
+#     if request.method == "POST":
+        
+#         # --- 1. Get All POST Data ---
+#         name = request.POST.get('name')
+#         product_type = request.POST.get('type') # Renamed 'type' to 'product_type' to avoid shadowing built-in 'type'
+#         items_per_package_str = request.POST.get('items_per_package')
+#         description = request.POST.get('description')
+#         price_str = request.POST.get('price')
+#         quantity_str = request.POST.get('quantity')
+#         classification_id = request.POST.get('classification')
+#         is_weight = product_type == 'weight'
+#         retail_sale_percent = request.POST.get('retail_sale_percent')
+#         whole_sale_percent = request.POST.get('whole_sale_percent')
+
+#         if not retail_sale_percent:
+#             retail_sale_percent = 5
+#         if not whole_sale_percent:
+#             whole_sale_percent = 3
+#         # Helper to simplify error rendering
+#         def render_error(error_message):
+#             return render(request, 'store/add_product.html', {
+#                 'error': error_message,
+#                 'classifications': Classification.objects.all()
+#             })
+
+#         # --- 2. Basic Validation & Type Conversion ---
+#         if not all([name, price_str, quantity_str]):
+#             return render_error('الرجاء تعبئة الحقول المطلوبة (المادة و السعر و الكمية)')
+        
+#         try:
+#             entered_price = float(price_str)
+#             entered_quantity = int(quantity_str)
+#         except ValueError:
+#             return render_error('السعر والكمية يجب أن تكون أرقامًا صالحة')
+
+#         # Variables to store the final, calculated values for the database
+#         final_price_per_unit = entered_price
+#         final_quantity_of_items = entered_quantity
+
+#         # --- 3. Handle 'many' (Package) Scenario ---
+#         if product_type == "many":
+#             if not items_per_package_str:
+#                 return render_error('يرجى تحديد عدد القطع في الطرد')
+            
+#             try:
+#                 items_per_package = int(items_per_package_str)
+#                 if items_per_package <= 0:
+#                     raise ValueError
+#             except ValueError:
+#                 return render_error('عدد القطع في الطرد يجب أن يكون رقمًا صحيحًا وموجبًا')
+
+#             # Calculation for the database:
+#             # Price per piece = Package Price / Items per Package
+#             final_price_per_unit = entered_price / items_per_package
+            
+#             # Total quantity of items = Number of Packages * Items per Package
+#             final_quantity_of_items = entered_quantity * items_per_package
+
+#         if product_type == "weight":
+
+#             # Calculation for the database:
+#             # Price per piece = Package Price / Items per Package
+#             final_price_per_unit = entered_price / 1000
+            
+#             # Total quantity of items = Number of Packages * Items per Package
+#             final_quantity_of_items = entered_quantity *1000
+#         # If product_type is "one", final_price_per_unit and final_quantity_of_items
+#         # already hold the entered_price and entered_quantity, so no change is needed.
+
+
+#         # --- 4. Handle Classification Lookup ---
+#         classification = None
+#         if classification_id:
+#             try:
+#                 # Fetch the Classification instance using the ID
+#                 classification = Classification.objects.get(id=classification_id)
+#             except Classification.DoesNotExist:
+#                 return render_error('التصنيف المحدد غير صحيح')
+
+#         # --- 5. Create Product in Database ---
+#         Product.objects.create(
+#             is_weight=is_weight,
+#             name=name,
+#             description=description,
+#             price=final_price_per_unit,          # Store the calculated price per single item
+#             quantity=final_quantity_of_items,    # Store the calculated total quantity of single items
+#             classification=classification,        # Pass the Classification instance or None
+#             # tareek
+#             retail_sale_percent=retail_sale_percent,
+#             whole_sale_percent=whole_sale_percent
+#         )
+        
+#         return redirect('add_product')
+        
+#     # --- GET Request ---
+#     return render(request, 'store/add_product.html', {
+#         'classifications': Classification.objects.all()
+#     })
 
 # def add_product(request):
 #     if request.method == "POST":
@@ -1189,42 +1458,94 @@ from django.contrib import messages
 from .models import Sale, SaleItem, Settings # Import your models
 from .printer_utils import print_receipt_usb # Import the utility we made
 
+def print_receipt(request, serial_number):
+    # 1. Fetch the Sale
+    sale = get_object_or_404(Sale, id=serial_number)
+    
+    # 2. Fetch the Items associated with this sale
+    sale_items = SaleItem.objects.filter(sale=sale)
+    
+    # 3. Prepare data for the printer
+    printer_items = []
+    
+    for item in sale_items:
+        # Calculate Total SYP for this line: 
+        syp_unit_price = item.price_at_sale * item.dollar_rate_at_sale
+        total_syp_line = syp_unit_price * item.quantity
+        
+        # Check if product is sold by weight
+        if item.product.is_weight:
+            # Convert from grams to Kg with 2 decimal places
+            display_quantity = item.quantity / 1000
+            display_quantity_str = f"{display_quantity:.2f} kg"  # 2 decimal places + " kg"
+        else:
+            # For non-weight products, just show the quantity
+            display_quantity = item.quantity
+            display_quantity_str = str(item.quantity)
 
-# from deep_translator import GoogleTranslator
+        printer_items.append({
+            'product_name': item.product.name,
+            # 'quantity': item.quantity,  # Original quantity in grams/units
+            'quantity': display_quantity_str,  # Formatted for display
+            # 'display_quantity_raw': display_quantity,  # Numeric value for calculations if needed
+            'total_price': total_syp_line,
+            # 'is_weight': item.product.is_weight
+        })
 
-# def translate_to_english(text):
-#     """Translate Arabic text to English"""
-#     try:
-#         translator = GoogleTranslator(source='ar', target='en')
-#         return translator.translate(text)
-#     except Exception as e:
-#         print(f"Translation error: {e}")
-#         return text  # Return original if translation fails
+    # Format the final payable price
+    payable_display = sale.total_payable_price
+    date_display = datetime.now().strftime("%Y-%m-%d %I:%M %p")
+    print(printer_items)
+    # 4. Trigger the Print
+    success, msg = print_receipt_usb(
+        serial_number=serial_number,
+        cart_items=printer_items,
+        total_payable=payable_display,
+        date_str=date_display
+    )
+
+    if success:
+        messages.success(request, "تمت الطباعة بنجاح")
+    else:
+        messages.error(request, f"خطأ في الطباعة: {msg}")
+
+    return redirect('home')
 
 # def print_receipt(request, serial_number):
+#     # 1. Fetch the Sale
 #     sale = get_object_or_404(Sale, id=serial_number)
+    
+#     # 2. Fetch the Items associated with this sale
 #     sale_items = SaleItem.objects.filter(sale=sale)
     
+#     # 3. Prepare data for the printer
+#     # We need to calculate the SYP price per line item based on the stored data
 #     printer_items = []
     
 #     for item in sale_items:
-#         # Auto-translate to English
-#         english_name = translate_to_english(item.product.name)
-        
+#         # Calculate Total SYP for this line: 
+#         # (Price USD * Rate) * Quantity
 #         syp_unit_price = item.price_at_sale * item.dollar_rate_at_sale
 #         total_syp_line = syp_unit_price * item.quantity
-        
+#         # Access product.is_weight
+#         # is_weight_product = item.product.is_weight
+
 #         printer_items.append({
-#             'product_name': english_name,
+#             'product_name': item.product.name,
 #             'quantity': item.quantity,
 #             'total_price': total_syp_line
 #         })
+
 #     # Format the final payable price
 #     # Assuming total_payable_price in Sale model is already in SYP 
 #     # (Based on your template {{payablePrice|intcomma}})
 #     # payable_display = "{:,}".format(sale.total_payable_price)
 #     payable_display = sale.total_payable_price
-#     date_display = sale.date.strftime("%Y-%m-%d")
+#     # date_display = sale.date.strftime("%Y-%m-%d")
+#     # Current date and time with AM/PM format
+#     # Example: "2025-12-05 04:52 PM"
+#     date_display = datetime.now().strftime("%Y-%m-%d %I:%M %p")
+
 
 #     # 4. Trigger the Print
 #     success, msg = print_receipt_usb(
@@ -1232,6 +1553,7 @@ from .printer_utils import print_receipt_usb # Import the utility we made
 #         cart_items=printer_items,
 #         total_payable=payable_display,
 #         date_str=date_display
+
 #     )
 
 #     if success:
@@ -1241,57 +1563,6 @@ from .printer_utils import print_receipt_usb # Import the utility we made
 
 #     # Redirect back to home or wherever you prefer
 #     return redirect('home')
-    # ... rest of your code
-def print_receipt(request, serial_number):
-    # 1. Fetch the Sale
-    sale = get_object_or_404(Sale, id=serial_number)
-    
-    # 2. Fetch the Items associated with this sale
-    sale_items = SaleItem.objects.filter(sale=sale)
-    
-    # 3. Prepare data for the printer
-    # We need to calculate the SYP price per line item based on the stored data
-    printer_items = []
-    
-    for item in sale_items:
-        # Calculate Total SYP for this line: 
-        # (Price USD * Rate) * Quantity
-        syp_unit_price = item.price_at_sale * item.dollar_rate_at_sale
-        total_syp_line = syp_unit_price * item.quantity
-        
-        printer_items.append({
-            'product_name': item.product.name,
-            'quantity': item.quantity,
-            'total_price': total_syp_line
-        })
-
-    # Format the final payable price
-    # Assuming total_payable_price in Sale model is already in SYP 
-    # (Based on your template {{payablePrice|intcomma}})
-    # payable_display = "{:,}".format(sale.total_payable_price)
-    payable_display = sale.total_payable_price
-    # date_display = sale.date.strftime("%Y-%m-%d")
-    # Current date and time with AM/PM format
-    # Example: "2025-12-05 04:52 PM"
-    date_display = datetime.now().strftime("%Y-%m-%d %I:%M %p")
-
-
-    # 4. Trigger the Print
-    success, msg = print_receipt_usb(
-        serial_number=serial_number,
-        cart_items=printer_items,
-        total_payable=payable_display,
-        date_str=date_display
-
-    )
-
-    if success:
-        messages.success(request, "تمت الطباعة بنجاح")
-    else:
-        messages.error(request, f"خطأ في الطباعة: {msg}")
-
-    # Redirect back to home or wherever you prefer
-    return redirect('home')
 
 
 

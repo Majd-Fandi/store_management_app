@@ -17,11 +17,11 @@
 
       <datalist id="productOptions">
       {% for product in products|dictsort:"name" %}
-      {% comment %} ({{ product.quantity }}) {% endcomment %}
           <option value="{{ product.name }}"
                   data-id="{{ product.id }}"
                   data-qty="{{ product.quantity }}" 
                   data-price="{{ product.price }}" 
+                  date-is-weight="{{product.is_weight}}"
                   retail-percent="{{ product.retail_sale_percent }}" 
                   whole-percent="{{ product.whole_sale_percent }}" 
                   data-syp-price="{{ product.syp_price }}">
@@ -107,4 +107,286 @@
 </div>
 
 <script src="{% static 'js/cart.js' %}"></script>
+
+<script>
+// Keyboard shortcuts with proper focus management
+document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+    const clearBtn = document.getElementById('clearSearch');
+    const productInput = document.getElementById('productSearchInput');
+    const productSelect = document.getElementById('productSelect');
+    const quantityInput = document.getElementById('quantityInput');
+    const addBtn = document.getElementById('addToCartBtn');
+    
+    // 1. ESC key to clear search (primary shortcut)
+    productInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            clearBtn.click(); // Trigger clear button
+            this.focus(); // Keep focus on input
+        }
+    });
+    
+    // 2. Enter key in quantity field - ADD TO CART AND FOCUS BACK TO PRODUCT SEARCH
+    quantityInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault(); // Prevent form submission
+            
+            // Validate before adding
+            if (!productSelect.value) {
+                alert('يرجى اختيار منتج أولاً');
+                productInput.focus();
+                return false;
+            }
+            
+            if (!quantityInput.value || parseInt(quantityInput.value) <= 0) {
+                alert('يرجى إدخال كمية صحيحة');
+                quantityInput.focus();
+                return false;
+            }
+            
+            // Trigger add to cart
+            addBtn.click();
+            
+            // RESET FORM AND FOCUS BACK TO PRODUCT SEARCH
+            setTimeout(function() {
+                // Clear product selection
+                productInput.value = '';
+                productSelect.value = '';
+             
+                
+                // Reset calculated fields
+                document.getElementById('originalPrice').textContent = '';
+                document.getElementById('sypPrice').textContent = '';
+                document.getElementById('profitPrice').textContent = '';
+                document.getElementById('sypProfitPrice').textContent = '';
+                document.getElementById('totalPrice').textContent = '';
+                document.getElementById('totalSypPrice').textContent = '';
+                
+                // Reset quantity to 1
+                quantityInput.value = '1';
+                
+                // FOCUS BACK TO PRODUCT SEARCH
+                productInput.focus();
+                productInput.select(); // Select text for easy typing
+            }, 100); // Small delay to ensure cart is updated
+        }
+    });
+    
+    // 3. Enter on profit percentage select
+    document.getElementById('profitSelect').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            quantityInput.focus(); // Move to quantity field
+            quantityInput.select();
+        }
+    });
+    
+    // 4. Enter on product search - if product is selected, go to quantity
+    productInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            if (productSelect.value) {
+                // Product is selected, move to quantity
+                quantityInput.focus();
+                quantityInput.select();
+            }
+            // If no product selected, stay in search (datalist will show)
+        }
+    });
+    
+    // 5. Ctrl+C to clear search (alternative shortcut)
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+C when product input is focused
+        if (e.ctrlKey && e.key === 'c' && document.activeElement === productInput) {
+            e.preventDefault(); // Prevent default copy behavior
+            clearBtn.click();
+            productInput.focus();
+        }
+        
+        // Global Ctrl+Shift+C to clear from anywhere
+        if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+            e.preventDefault();
+            clearBtn.click();
+            productInput.focus();
+        }
+        
+        // Ctrl+Enter as global shortcut to add to cart
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            if (productSelect.value && quantityInput.value > 0) {
+                addBtn.click();
+                // Reset and focus
+                setTimeout(function() {
+                    productInput.value = '';
+                    productSelect.value = '';
+                    quantityInput.value = '1';
+                    productInput.focus();
+                }, 100);
+            }
+        }
+    });
+    
+    // 6. Setup tab navigation
+    setupTabNavigation();
+    
+    // 7. Add keyboard hints
+    addKeyboardHints();
+});
+
+// Setup tab navigation between form fields
+function setupTabNavigation() {
+    const tabbableElements = [
+        document.getElementById('productSearchInput'),
+        document.getElementById('saleTypeSelect'),
+        document.getElementById('profitSelect'),
+        document.getElementById('quantityInput'),
+        document.getElementById('addToCartBtn')
+    ];
+    
+    // Handle Shift+Tab for reverse navigation
+    tabbableElements.forEach((element, index) => {
+        element.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                if (e.shiftKey && index === 0) {
+                    // If Shift+Tab on first element, go to last (add button)
+                    e.preventDefault();
+                    tabbableElements[tabbableElements.length - 1].focus();
+                } else if (!e.shiftKey && index === tabbableElements.length - 1) {
+                    // If Tab on last element (add button), go to first (product search)
+                    e.preventDefault();
+                    tabbableElements[0].focus();
+                }
+            }
+        });
+    });
+}
+
+// Add visual hints for keyboard shortcuts
+function addKeyboardHints() {
+    const productInput = document.getElementById('productSearchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const quantityInput = document.getElementById('quantityInput');
+    const addBtn = document.getElementById('addToCartBtn');
+    
+    // Add title attributes for tooltips
+    productInput.title = "ابدأ بالكتابة للبحث، اضغط Enter للانتقال للكمية، ESC للمسح";
+    clearBtn.title = "مسح البحث (اختصار: ESC)";
+    quantityInput.title = "أدخل الكمية واضغط Enter للإضافة السريعة والعودة للبحث";
+    addBtn.title = "إضافة للفاتورة (اختصار: Enter في حقل الكمية)";
+
+}
+
+// Override the default form submission to prevent interference
+document.getElementById('addProductForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    return false;
+});
+</script>
+{% comment %} <script>
+  // Add keyboard shortcut - Enter key to add to cart
+document.addEventListener('DOMContentLoaded', function() {
+    // Listen for Enter key press on the quantity input
+    document.getElementById('quantityInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault(); // Prevent form submission
+            document.getElementById('addToCartBtn').click(); // Trigger add to cart
+            this.focus(); // Keep focus on quantity input for next item
+            return false;
+        }
+    });
+    
+    // Also listen for Enter on profit percentage select for accessibility
+    document.getElementById('profitSelect').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            e.preventDefault();
+            document.getElementById('addToCartBtn').click();
+            document.getElementById('quantityInput').focus();
+        }
+    });
+});
+
+// Keyboard shortcuts manager
+document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+    const clearBtn = document.getElementById('clearSearch');
+    const productInput = document.getElementById('productSearchInput');
+    const quantityInput = document.getElementById('quantityInput');
+    const addBtn = document.getElementById('addToCartBtn');
+    
+    // 1. ESC key to clear search (primary shortcut)
+    productInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            clearBtn.click(); // Trigger clear button
+            this.focus(); // Keep focus on input
+        }
+    });
+    
+    // 2. Ctrl+C to clear search (alternative shortcut)
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+C when product input is focused
+        if (e.ctrlKey && e.key === 'c' && document.activeElement === productInput) {
+            e.preventDefault(); // Prevent default copy behavior
+            clearBtn.click();
+        }
+        
+        // Global Ctrl+Shift+C to clear from anywhere
+        if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+            e.preventDefault();
+            clearBtn.click();
+            productInput.focus();
+        }
+    });
+    
+    // 3. Tab navigation enhancement
+    setupTabNavigation();
+    
+    // 4. Add visual feedback
+    addKeyboardHints();
+});
+
+// Setup tab navigation between form fields
+function setupTabNavigation() {
+    const tabbableElements = [
+        document.getElementById('productSearchInput'),
+        document.getElementById('saleTypeSelect'),
+        document.getElementById('profitSelect'),
+        document.getElementById('quantityInput'),
+        document.getElementById('addToCartBtn')
+    ];
+    
+    // Handle Shift+Tab for reverse navigation
+    tabbableElements.forEach((element, index) => {
+        element.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                if (e.shiftKey && index === 0) {
+                    // If Shift+Tab on first element, go to last
+                    e.preventDefault();
+                    tabbableElements[tabbableElements.length - 1].focus();
+                } else if (!e.shiftKey && index === tabbableElements.length - 1) {
+                    // If Tab on last element, go to first
+                    e.preventDefault();
+                    tabbableElements[0].focus();
+                }
+            }
+        });
+    });
+}
+
+// Add visual hints for keyboard shortcuts
+function addKeyboardHints() {
+    const productInput = document.getElementById('productSearchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const quantityInput = document.getElementById('quantityInput');
+    const addBtn = document.getElementById('addToCartBtn');
+    
+    // Add title attributes for tooltips
+    productInput.title = "ابدأ بالكتابة للبحث، اضغط ESC أو Ctrl+C للمسح";
+    clearBtn.title = "مسح البحث (اختصار: ESC أو Ctrl+C)";
+    quantityInput.title = "أدخل الكمية واضغط Enter للإضافة السريعة";
+    addBtn.title = "إضافة للفاتورة (اختصار: Enter في حقل الكمية)";
+    
+}
+</script> {% endcomment %}
 {% endblock %}

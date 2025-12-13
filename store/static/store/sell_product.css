@@ -130,18 +130,15 @@ p {
 
 
 #product_quantity {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute;
+  top: 135px;
   color: white;
+  right:550px;
   background-color: #333333ff;
   border-radius: 50px;
-  min-width: 25px;
-  height: 25px;
-  padding: 0 8px;
+  padding: 4px 16px;
   font-size: 12px;
   font-weight: bold;
-  line-height: 1;
   margin: 0 2px;
 }
 

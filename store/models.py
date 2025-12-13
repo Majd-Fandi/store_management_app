@@ -16,9 +16,11 @@ class Classification(models.Model):
 # ======================================================================
 
 class Product(models.Model):
-    name = models.CharField(max_length=100)
+    is_weight = models.BooleanField(default=False)
+    
+    name = models.CharField(max_length=100,unique=True)
     description = models.TextField(null=True,blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=4)
     quantity = models.PositiveIntegerField() 
     classification=models.ForeignKey(Classification, on_delete=models.SET_NULL,null=True,blank=True) 
     retail_sale_percent = models.PositiveIntegerField(null=True, blank=True)
@@ -61,8 +63,8 @@ class SaleItem(models.Model):
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE)  # CASCADE is fine here because SaleItem is a child of Sale
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()  # Quantity of the product sold
-    price_at_sale = models.DecimalField(max_digits=10, decimal_places=2)  # Price at the time of sale
-    dollar_rate_at_sale=models.DecimalField(max_digits=10, decimal_places=2)
+    price_at_sale = models.DecimalField(max_digits=10, decimal_places=4)  # Price at the time of sale
+    dollar_rate_at_sale=models.DecimalField(max_digits=10, decimal_places=4)
 
     def save(self, *args, **kwargs):
         if self.dollar_rate_at_sale is None:
@@ -78,7 +80,7 @@ class SaleItem(models.Model):
 
 class Settings(models.Model):
     key = models.CharField(max_length=50, unique=True)
-    value = models.DecimalField(max_digits=15, decimal_places=2)
+    value = models.DecimalField(max_digits=15, decimal_places=4)
 
     def __str__(self):
         return f"{self.key}: {self.value}"
@@ -103,7 +105,7 @@ class Trader(models.Model):
     contact_info = models.TextField(blank=True, verbose_name="معلومات التواصل")
     current_balance = models.DecimalField(
         max_digits=10, 
-        decimal_places=2, 
+        decimal_places=4, 
         default=0.00, 
         verbose_name="Current Financial Balance"
     )
@@ -123,7 +125,7 @@ class Trader(models.Model):
                     When(transaction_type=Transaction.TransactionType.PURCHASE, then=F('amount')),
                     When(transaction_type=Transaction.TransactionType.PAYMENT, then=-F('amount')),
                     default=0,
-                    output_field=DecimalField(max_digits=10, decimal_places=2)
+                    output_field=DecimalField(max_digits=10, decimal_places=4)
                 )
             )
         )
@@ -171,7 +173,7 @@ class Transaction(models.Model):
         choices=TransactionType.choices, 
         verbose_name="Type"
     )
-    amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Amount")
+    amount = models.DecimalField(max_digits=10, decimal_places=4, verbose_name="Amount")
     notes = models.TextField(blank=True, verbose_name="Notes")
     date = models.DateTimeField(auto_now_add=True, verbose_name="Date")
 

@@ -47,7 +47,7 @@ class ProductBulkAddForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'المادة'}),
             # Note: We add specific classes to price/quantity to target them in JS
-            'price': forms.NumberInput(attrs={'step': '0.01', 'min': '0', 'class': 'unit-field'}),
+            'price': forms.NumberInput(attrs={'step': 'any', 'min': '0', 'class': 'unit-field'}),
             'quantity': forms.NumberInput(attrs={'min': '0', 'class': 'unit-field'}),
             'description': forms.Textarea(attrs={'rows': 1, 'placeholder': 'اختياري'}), 
         }
@@ -180,10 +180,10 @@ class ProductForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'quantity', 'additional_quantity', 'classification','whole_sale_percent','retail_sale_percent']
+        fields = ['name','is_weight', 'description', 'price', 'quantity', 'additional_quantity', 'classification','whole_sale_percent','retail_sale_percent']
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'المادة'}),
-            'price': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+            'price': forms.NumberInput(attrs={'step': '0.0001', 'min': '0'}),
             'quantity': forms.NumberInput(attrs={'min': '0'}),
             'classification': forms.Select(attrs={'placeholder': 'اختر التصنيف'}),  # Add widget for classification
         }

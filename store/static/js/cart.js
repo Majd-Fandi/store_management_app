@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // 1. Reset INPUT values
         productSearchInput.value = "";    // Clear the searchable product name
         productSelect.value = 0;          // Reset the hidden product ID to 0
-        quantityInput.value = 1;          // Reset quantity to 1
+        quantityInput.value = "1";          // Reset quantity to 1
         SaleTypeSelect.value = "0";       // Reset sale type to default (مفرق/0)
 
         // 2. Reset profit select options (FIX for NaN issue)
@@ -105,6 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let availableQuantity = 0;
         let retailPercent = 0;
         let wholePercent = 0;
+        let isWeight = false; // Add this variable
 
         if (selectedOption) {
             // Product is selected, extract data attributes
@@ -112,6 +113,7 @@ document.addEventListener('DOMContentLoaded', function () {
             productName = selectedProductName;
             originalPrice = parseFloat(selectedOption.getAttribute('data-price')) || 0;
             sypPrice = parseFloat(selectedOption.getAttribute('data-syp-price')) || 0;
+            isWeight = selectedOption.getAttribute('date-is-weight') === 'True';
             availableQuantity = parseInt(selectedOption.getAttribute('data-qty')) || 0;
             retailPercent = selectedOption.getAttribute('retail-percent');
             wholePercent = selectedOption.getAttribute('whole-percent');
@@ -130,20 +132,28 @@ document.addEventListener('DOMContentLoaded', function () {
             // We DO NOT reset quantityInput.value here
         }
         // --- END FIX ---
-
+        
         // --- Calculation and Display ---
+        // productQuantity.textContent = availableQuantity;
+        if (isWeight) {
+        // Convert from grams to Kg and display with 3 decimal places
+        const quantityInKg = (availableQuantity / 1000).toFixed(2);
+        productQuantity.textContent = `${quantityInKg} Kg`;
+        } else {
         productQuantity.textContent = availableQuantity;
+        }
 
-        originalPriceSpan.textContent = originalPrice.toFixed(2);
+
+        originalPriceSpan.textContent = originalPrice.toFixed(4);
         sypPriceSpan.textContent = formatNumberWithCommas(sypPrice.toFixed(0));
 
         const profitPrice = originalPrice * (1 + profitPercentage);
         const sypProfitPrice = sypPrice * (1 + profitPercentage);
 
-        // profitPriceSpan.textContent = profitPrice.toFixed(2);
+        // profitPriceSpan.textContent = profitPrice.toFixed(4);
         // sypProfitPriceSpan.textContent = formatNumberWithCommas(sypProfitPrice.toFixed(0));
 
-        profitPriceSpan.textContent = Number.isNaN(profitPrice) ? "- - -" : profitPrice.toFixed(2);
+        profitPriceSpan.textContent = Number.isNaN(profitPrice) ? "- - -" : profitPrice.toFixed(4);
         sypProfitPriceSpan.textContent = Number.isNaN(sypProfitPrice)
             ? "- - -"
             : formatNumberWithCommas(sypProfitPrice.toFixed(0));
@@ -151,10 +161,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const totalPrice = profitPrice * quantity;
         const totalSypPrice = sypProfitPrice * quantity;
 
-        // totalPriceSpan.textContent = totalPrice.toFixed(2);
+        // totalPriceSpan.textContent = totalPrice.toFixed(4);
         // totalSypPriceSpan.textContent = formatNumberWithCommas(totalSypPrice.toFixed(0));
 
-        totalPriceSpan.textContent = Number.isNaN(totalPrice) ? "- - -" : totalPrice.toFixed(2);
+        totalPriceSpan.textContent = Number.isNaN(totalPrice) ? "- - -" : totalPrice.toFixed(4);
         totalSypPriceSpan.textContent = Number.isNaN(totalSypPrice)
             ? "- - -"
             : formatNumberWithCommas(totalSypPrice.toFixed(0));
@@ -185,6 +195,7 @@ document.addEventListener('DOMContentLoaded', function () {
             totalPrice: totalPrice,
             totalSypPrice: totalSypPrice,
             availableQuantity: availableQuantity,
+            isWeight: isWeight,//newly added 
         };
     }
 
@@ -199,10 +210,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const totalProfit = cart.reduce((sum, item) => sum + item.quantity * (item.profitPrice - item.originalPrice), 0);
         const totalSypProfit = cart.reduce((sum, item) => sum + item.quantity * (item.sypProfitPrice - item.sypPrice), 0);
 
-        cartTotalPriceSpan.textContent = totalPrice.toFixed(2);
+        cartTotalPriceSpan.textContent = totalPrice.toFixed(4);
         cartTotalSypPriceSpan.textContent = formatNumberWithCommas(totalSypPrice.toFixed(0));
         cartAprTotalSypPriceSpan.textContent = formatNumberWithCommas(aprtotalSypPrice.toFixed(0));//hello
-        cartTotalProfitSpan.textContent = totalProfit.toFixed(2);
+        cartTotalProfitSpan.textContent = totalProfit.toFixed(4);
         cartTotalSypProfitSpan.textContent = formatNumberWithCommas(totalSypProfit.toFixed(0));
     }
 
@@ -214,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <td>${item.productName}</td>
                 <td>${item.quantity}</td>
                 <td>${item.profitPercentage}%</td>
-                <td>${item.totalPrice.toFixed(2)}</td>
+                <td>${item.totalPrice.toFixed(4)}</td>
                 <td>${formatNumberWithCommas(item.totalSypPrice.toFixed(0))}</td>
                 <td>
                     <button type="button" onclick="removeFromCart(${index})" class="btn red">حذف</button>
@@ -238,6 +249,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const productId = productDetails.productId;
         const newQuantity = productDetails.quantity;
         const availableQuantity = productDetails.availableQuantity;
+        const isWeight = productDetails.isWeight;
 
         if (productId == 0) {
             alert("يرجى اختيار منتج أولاً .");
@@ -268,6 +280,7 @@ document.addEventListener('DOMContentLoaded', function () {
             cartItem.quantity += productDetails.quantity;
             cartItem.totalPrice += productDetails.totalPrice;
             cartItem.totalSypPrice += productDetails.totalSypPrice;
+            cartItem.isWeight = isWeight;
         } else {
             // Add a new item to the cart
             cart.push(productDetails);

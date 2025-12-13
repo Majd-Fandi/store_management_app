@@ -16,3 +16,9 @@ add packages insert to insert_products
 ? financial accounts with companies 
 ? connect the printer to the system 
 
+weight : 
+1- product card : multiply prices by 1000 and divide quantity by 1000 
+2- add product : change the quantity input to accept decimal values 
+3- product details ! 
+4- sell product !
+5- print receipt 

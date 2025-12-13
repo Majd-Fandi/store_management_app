@@ -36,7 +36,8 @@ def print_receipt_usb(serial_number, cart_items, total_payable, date_str):
         
         # ITEMS HEADER
         p.set(bold=True)
-        p.text(f"{'PRICE':<15}{'QTY':>3}{'ITEM':>30}\n")
+        # p.text(f"{'PRICE':<15}{'QTY':>3}{'ITEM':>30}\n")
+        p.text(f"{'PRICE':<9}{'QTY':>9}{'ITEM':>30}\n")
         p.set(bold=False)
         p.text("-" * 48 + "\n")
         
@@ -47,7 +48,8 @@ def print_receipt_usb(serial_number, cart_items, total_payable, date_str):
             price = "{:,.0f}".format(float(item.get('total_price', 0)))
             
             p._raw(b'\x1B\x74\x21')
-            line=f"{name:<30}{qty:>3}{price:>15}\n\n"
+            # line=f"{name:<30}{qty:>3}{price:>15}\n\n"
+            line=f"{name:<30}{qty:>9}{price:>9}\n\n"
             p._raw(line.encode(ARABIC_EENCODING))
         
         p.text("-" * 48 + "\n\n")

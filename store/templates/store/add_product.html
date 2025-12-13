@@ -5,6 +5,9 @@
 
 <div class="card">
    <h3 style="padding-top:10px;padding-bottom:10px;">إضافة مادة جديدة </h3>
+    <p class="error">
+    {{error}}
+  </p>
 <div class="container">
 <form method="post">
   {% csrf_token %}
@@ -19,6 +22,7 @@
     <select name="type" id="typeSelect" placeholder="إختر طريقة الإضافة">
       <option value="one" selected>مفرد</option> 
         <option value="many" >طرد</option>
+        <option value="weight" >وزن</option>
     </select>
 
     <br>
@@ -31,10 +35,12 @@
     
     
     <label class="form-label" id="priceLabel">السعر $ : </label><br>
-    <input type="number" step="0.01" name="price"><br>
+    {% comment %} <input type="number" step="0.0001" name="price"><br> {% endcomment %}
+    <input name="price"><br>
     <label class="form-label"  id="quantityLabel">الكمية : </label><br>
-    <input type="number" name="quantity"><br>
-    
+    {% comment %} <input name="quantity"><br> {% endcomment %}
+    {% comment %} <input type="number" name="quantity"><br> {% endcomment %}
+    <input type="number" step="any" id="quantityInput" name="quantity"><br>
   </div>
     <div class="left-column">
           <label class="form-label" >الصنف :  </label><br>
@@ -65,9 +71,7 @@
   <a class="btn green" style="font-size:small" href={% url 'insert_products' %}>قائمة إضافة</a>
   
   <br>
-  <p class="error">
-    {{error}}
-  </p>
+ 
   
 </form>
 </div>
@@ -90,7 +94,7 @@
             // For an AJAX update, you'd call a function here to fetch and update the #classificationList content.
         });
     </script>
-
+{% comment %} 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const typeSelect = document.getElementById('typeSelect');
@@ -105,6 +109,9 @@
         const labelManyPrice = "السعر (سعر الطرد) $ : ";
         const labelManyQuantity = "الكمية (عدد الطرود) : ";
 
+        const labelWeightPrice = "السعر (Kg) $ : ";
+        const labelWeightQuantity = "الكمية (Kg) : ";
+
         function updateFormBasedOnType() {
             const selectedType = typeSelect.value;
 
@@ -115,11 +122,76 @@
                 
                 priceLabel.textContent = labelManyPrice;
                 quantityLabel.textContent = labelManyQuantity;
-            } else {
+            } else if(selectedType=='weight') {
                 // Type: مفرد (One)
                 itemsPerPackageContainer.style.display = 'none';
                 itemsPerPackageInput.required = false;
                 itemsPerPackageInput.value = ''; // Clear the value when hidden
+                
+                priceLabel.textContent = labelWeightPrice;
+                quantityLabel.textContent = labelWeightQuantity;
+            }else {
+                // Type: مفرد (One)
+                itemsPerPackageContainer.style.display = 'none';
+                itemsPerPackageInput.required = false;
+                itemsPerPackageInput.value = ''; // Clear the value when hidden
+                
+                priceLabel.textContent = labelOnePrice;
+                quantityLabel.textContent = labelOneQuantity;
+            }
+        }
+
+        // 1. Attach the event listener to the type selection
+        typeSelect.addEventListener('change', updateFormBasedOnType);
+
+        // 2. Run the function once on load to set the correct initial state
+        updateFormBasedOnType(); 
+    });
+</script> {% endcomment %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const typeSelect = document.getElementById('typeSelect');
+        const itemsPerPackageContainer = document.getElementById('itemsPerPackageContainer');
+        const priceLabel = document.getElementById('priceLabel');
+        const quantityLabel = document.getElementById('quantityLabel');
+        const itemsPerPackageInput = document.getElementById('itemsPerPackageInput');
+        const quantityInput = document.getElementById('quantityInput'); // Add this
+
+        // Text constants
+        const labelOnePrice = "السعر (للقطعة) $ : ";
+        const labelOneQuantity = "الكمية (عدد القطع) : ";
+        const labelManyPrice = "السعر (سعر الطرد) $ : ";
+        const labelManyQuantity = "الكمية (عدد الطرود) : ";
+        const labelWeightPrice = "السعر (Kg) $ : ";
+        const labelWeightQuantity = "الكمية (Kg) : ";
+
+        function updateFormBasedOnType() {
+            const selectedType = typeSelect.value;
+
+            if (selectedType === 'many') {
+                // Type: الطرد (Many)
+                itemsPerPackageContainer.style.display = 'block';
+                itemsPerPackageInput.required = true;
+                quantityInput.step = "1"; // Integer step for packages
+                
+                priceLabel.textContent = labelManyPrice;
+                quantityLabel.textContent = labelManyQuantity;
+            } else if(selectedType == 'weight') {
+                // Type: وزن (Weight)
+                itemsPerPackageContainer.style.display = 'none';
+                itemsPerPackageInput.required = false;
+                itemsPerPackageInput.value = '';
+                quantityInput.step = "any"; // Allow decimal for weight
+                
+                priceLabel.textContent = labelWeightPrice;
+                quantityLabel.textContent = labelWeightQuantity;
+            } else {
+                // Type: مفرد (One)
+                itemsPerPackageContainer.style.display = 'none';
+                itemsPerPackageInput.required = false;
+                itemsPerPackageInput.value = '';
+                quantityInput.step = "1"; // Integer step for single items
                 
                 priceLabel.textContent = labelOnePrice;
                 quantityLabel.textContent = labelOneQuantity;

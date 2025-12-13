@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load math_filters %}
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'store/sell_success.css' %}">
@@ -22,20 +23,25 @@
     <p class="bill-date"><strong>التاريخ : </strong> {% now "d/m/Y" %}</p>
     <p class="bill-time"><strong>الساعة : </strong> {% now "g:i A" %}</p>
 </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>المنتج</th>
-                <th>الكمية</th>
-                <th>السعر SYP</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in cart %}
+<table>
+    <thead>
+        <tr>
+            <th>المنتج</th>
+            <th>الكمية</th>
+            <th>السعر SYP</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in cart %}
             <tr>
                 <td>{{ item.productName }}</td>
-                <td>{{ item.quantity }}</td>
+                <td>
+                    {% if item.isWeight %}
+                    Kg {{ item.quantity|div:1000 }}
+                    {% else %}
+                    {{ item.quantity }}
+                    {% endif %}
+                </td>
                 <td>{{ item.totalSypPrice|floatformat:0|intcomma }}</td>
         </tr>
         {% endfor %}

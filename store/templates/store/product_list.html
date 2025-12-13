@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load math_filters %}
+
+
+
+
 {% block css-files %}
 <link rel="stylesheet" type="text/css" href="{% static 'store/product_list.css' %}">
 {% endblock %}
@@ -24,6 +29,7 @@
     <select name="classification">
       <option value="" {% if not classification_filter %}selected{% endif %}>كل الأصناف</option>
       <option value="no-category" {% if classification_filter|stringformat:"s" == "no-category" %}selected{% endif %}>البضائع بدون تصنيف</option>
+      <option value="weight-category" {% if classification_filter|stringformat:"s" == "weight-category" %}selected{% endif %}>البضائع المباعة بالوزن</option>
       {% for object in classifications %}
         <option value="{{ object.id }}" {% if classification_filter|stringformat:"s" == object.id|stringformat:"s" %}selected{% endif %}>
           {{ object.category }}
@@ -83,12 +89,21 @@
             {% comment %} {% if product.description %}
               <p class="description">{{ product.description }}</p>
             {% endif %} {% endcomment %}
-            <p><strong>سعر القطعة :</strong> $ {{ product.price }}</p>
-            <p><strong>سعر القطعة بالليرة :</strong> SYP {{ product.syp_price|intcomma }}</p>
+             {% if product.is_weight %}
+             <p><strong>سعر الكيلو :</strong> $ {{ product.price|mul:1000|floatformat:4|intcomma }}</p>
+            <p><strong>سعر الكيلو بالليرة :</strong> SYP {{ product.syp_price|mul:1000|floatformat:0|intcomma }}</p>
+             {% else %}
+             <p><strong>سعر القطعة :</strong> $ {{ product.price }}</p>
+             <p><strong>سعر القطعة بالليرة :</strong> SYP {{ product.syp_price|intcomma }}</p>
+             {% endif %}
             <p>
               <strong>الكمية المتوفرة :</strong> 
               <span class="{% if product.quantity < minimum_value %}low-quantity{% else %}high-quantity{% endif %}">
+                {% if product.is_weight %}
+                {{ product.quantity|div:1000 }} Kg
+                {% else %}
                 {{ product.quantity }}
+                {% endif %}
               </span>
             </p>
           </div>

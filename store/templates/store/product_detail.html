@@ -18,8 +18,12 @@
                 <div class="error">{{ form.name.errors }}</div>
             {% endif %}
             <br>
-
-            <label class="form-label" for="{{ form.price.id_for_label }}">السعر $ : </label>
+            <label class="form-label" for="{{ form.price.id_for_label }}">السعر $ : 
+                {% if form.is_weight.value %}
+                <p style="font-size:small;color:gray; margin:0;display:inline;">Kg / 1000</p>
+                {% endif %}
+            </label>
+            
             <br>
             {{ form.price }}
             {% if form.price.errors %}
@@ -30,7 +34,11 @@
         
         <!-- Render the quantity field -->
       
-            <label class="form-label" for="{{ form.quantity.id_for_label }}">الكمية الحالية : </label>
+            <label class="form-label" for="{{ form.quantity.id_for_label }}">الكمية الحالية : 
+                 {% if form.is_weight.value %}
+                <p style="font-size:small;color:gray; margin:0;display:inline;">Kg * 1000</p>
+                {% endif %}
+            </label>
             <br>
             {{ form.quantity }}
             {% if form.quantity.errors %}
@@ -38,10 +46,14 @@
             {% endif %}
             <br>
      
-        
+        {{ form.is_weight.as_hidden }}
         <!-- Render the additional_quantity field -->
      
-            <label class="form-label" for="{{ form.additional_quantity.id_for_label }}">الكمية الإضافية : </label>
+            <label class="form-label" for="{{ form.additional_quantity.id_for_label }}">الكمية الإضافية :
+                 {% if form.is_weight.value %} 
+                <p style="font-size:small;color:gray; margin:0;display:inline;">Kg * 1000</p>
+                {% endif %}
+            </label>
             <br>
             {{ form.additional_quantity }}
             {% if form.additional_quantity.errors %}
@@ -61,7 +73,8 @@
             <label class="form-label" for="{{ form.classification.id_for_label }}">الصنف : </label>
             <br>
             {{ form.classification }}
-                 <a class="add-classification" href={% url 'add_classification' %}>+</a>
+            <button type="button" id="openModalBtn" class="btn blue">+</button>
+                 {% comment %} <a class="add-classification" href={% url 'add_classification' %}>+</a> {% endcomment %}
             {% if form.classification.errors %}
                 <div class="error">{{ form.classification.errors }}</div>
             {% endif %}
@@ -105,7 +118,22 @@
         </div>
     </div>
 
+    <div id="classificationList">
+        </div>
+    {% include 'store/snippets/classification_modal.html' %} 
 
+        <script>
+        document.addEventListener('classificationAdded', function(e) {
+            // This runs after a classification is successfully inserted
+            console.log('New Classification added:', e.detail.category);
+            
+            
+            // For a simple update, you might just reload the page:
+             window.location.reload(); 
+
+            // For an AJAX update, you'd call a function here to fetch and update the #classificationList content.
+        });
+    </script>
     <!-- JavaScript to handle the modal -->
     <script>
         // Get the modal and buttons
