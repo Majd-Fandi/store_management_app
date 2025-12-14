@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load math_filters %}
 
 {% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'store/sales.css' %}">
@@ -26,7 +27,13 @@
         {% for item in sale_items %}
         <tr>
             <td>{{ item.product.name }}</td>
-            <td>{{ item.quantity }}</td>
+            <td>
+                {% if item.product.is_weight %}
+                {{ item.quantity|div:1000|floatformat:3 }} Kg
+                {% else %}
+                {{ item.quantity }}
+                {% endif %}
+            </td>
             <td>{{ item.price_per_item }}</td>
             <td>{{ item.dollar_rate_at_sale|floatformat:0|intcomma }}</td>
             <td>{{ item.total_price }}</td>

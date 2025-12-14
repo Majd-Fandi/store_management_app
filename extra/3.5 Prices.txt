@@ -1,0 +1,13 @@
+To subtract 3.5% from price: price - (price * 3.5%)
+
+Which is: price - (price * 0.035)
+
+Factor out price: price * (1 - 0.035)
+
+Which gives: price * 0.965
+
+Query tool on the database : database.schema.table
+
+-- Update price by subtracting 3.5% (multiplying by 0.965)
+UPDATE your_table_name
+SET price = ROUND(price * 0.965, 4);

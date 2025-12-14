@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
         wholePercentText.textContent = "0 %";
         retailPercentOption.value = 0;
         wholePercentOption.value = 0;
-        profitSelect.value = 0; // Select the '0' value option
+        profitSelect.value = 3.5; // Select the '0' value option
 
         // 3. Recalculate all prices based on the new empty state
         // This will set all price spans to "0.00" or "0"

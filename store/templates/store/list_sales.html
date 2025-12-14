@@ -4,6 +4,138 @@
 
 {% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'store/sales.css' %}">
+
+
+
+<form method="get" action="{% url 'list_sales' %}">
+    <label for="start_date" class="form-label"> من تاريخ :</label>
+    <input type="date" id="start_date" name="start_date" >
+    
+    <label for="end_date" class="form-label"> إلى تاريخ :</label>
+    <input type="date" id="end_date" name="end_date">
+    
+    <button type="submit" class="btn blue">تصفية</button>
+    <button type="button" class="btn special_blue" onclick="openModal()">
+    إنشاء تقرير
+</button>
+<button type="button" class="btn green">
+    <a href={% url "sales_statistics" %}>
+        عمل إحصائية
+    <a/>
+</button>
+</form>
+<hr>
+<form>
+    <label for="single_date"  class="form-label">في تاريخ :</label>
+    <input type="date" id="single_date" name="single_date">
+    <button type="submit" class="btn blue">تصفية</button>
+    <button type="button" class="btn gray" id="clearSearch">إلغاء البحث</button>
+</form>
+<!-- Add this search form for sale ID -->
+<form method="get" action="{% url 'list_sales' %}" style="margin-bottom: 20px;">
+    <label for="sale_id" class="form-label">الفاتورة :</label>
+    <input type="number" id="sale_id" name="sale_id" placeholder="أدخل رقم الفاتورة ثم إضغط : Enter" min="1">
+    {% comment %} <button type="submit" class="btn blue">بحث</button> {% endcomment %}
+</form>
+<p style="text-align:center; "><strong>{{sales_message}}</strong></p>
+
+<table class="sales-list-table">
+    <thead>
+        <tr>
+            <th>رقم عملية البيع</th>
+            <th>التاريخ</th>
+            <th>إجمالي العناصر</th>
+            <th>إجمالي السعر</th>
+            <th>إجمالي السعر بالليرة</th>
+            <th>المبلغ الحقيقي</th>
+            <th>الإجراءات</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for data in sales_data %}
+            <tr>
+                <td>{{ data.sale.id }}</td>
+                <td>{{ data.sale.date|date:"Y/m/d" }}</td>
+                <td>{{ data.total_items }}</td>
+                <td>{{ data.total_price }}</td>
+                <td>{{ data.total_price_syp|floatformat:0|intcomma }}</td>
+                <td>{{ data.sale.total_payable_price|floatformat:0|intcomma }}</td>
+                <td><a href="{% url 'sale_detail' data.sale.id %}">عرض التفاصيل</a></td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7" style="text-align:center" class="error">لا توجد مبيعات مسجلة</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div id="salesModal" class="form-modal">
+  <div class="form-modal-content">
+    <div class="form-modal-header">
+      <h5>اختر الفترة :</h5>
+      <span class="close" onclick="closeModal()">&times;</span>
+    </div>
+    <div>
+      <form id="salesForm" method="POST" action="{% url 'generate_pdf' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="start_date">من تاريخ :</label>
+          <input type="date" id="start_date" name="start_date" required>
+        </div>
+        <div class="form-group">
+          <label for="end_date">إلى تاريخ :</label>
+          <input type="date" id="end_date" name="end_date" required>
+        </div>
+        <button type="submit" class="btn green">إنشاء تقرير</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+    // All Delete Confirmation Modal Logic has been removed
+
+    // Report Modal Functions
+    function openModal() {
+        document.getElementById("salesModal").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("salesModal").style.display = "none";
+    }
+
+    // Close report modal when clicking outside
+    window.onclick = function(event) {
+        const reportModal = document.getElementById("salesModal");
+        if (event.target === reportModal) {
+            closeModal();
+        }
+    }
+
+    // Clear search functionality
+    document.getElementById('clearSearch').addEventListener('click', function () {
+        // Clear all search parameters including sale_id
+        window.location.href = window.location.pathname;
+    });
+</script>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+{% comment %} {% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'store/sales.css' %}">
 <form method="get" action="{% url 'list_sales' %}">
     <label for="start_date" class="form-label"> من تاريخ :</label>
     <input type="date" id="start_date" name="start_date" >
@@ -84,30 +216,6 @@
   </div>
 </div>
 
-{% comment %} <div id="salesModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h5>اختر السنة و الشهر :</h5>
-            <span class="close" onclick="closeModal()">&times;</span>
-        </div>
-        <div>
-            <form id="salesForm" method="POST" action="{% url 'generate_pdf'%}">
-                {% csrf_token %}
-                <div class="form-group">
-                    <select class="form-control" id="month" name="month">
-                        {% for month in months %}
-                            <option value="{{ month.0 }}">{{ month.1 }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <input type="number" class="form-control" id="year" name="year" value="{{ current_year }}" required>
-                </div>
-                <button type="submit" class="btn green">جرد </button>
-            </form>
-        </div>
-    </div>
-</div> {% endcomment %}
 
 <script>
     // All Delete Confirmation Modal Logic has been removed
@@ -135,4 +243,4 @@
     });
 </script>
 
-{% endblock %}
+{% endblock %} {% endcomment %}

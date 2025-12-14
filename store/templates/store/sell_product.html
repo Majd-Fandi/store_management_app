@@ -46,6 +46,8 @@
       <select name="profit_percentage" id="profitSelect">
         {% comment %} <option value="5" id="retailPercentOption"><span id="retailPercent"><span/></option>
         <option value="3" id="wholePercentOption"><span id="wholePercent"><span/></option> {% endcomment %}
+
+         <option value="3.5" selected>3.5 %</option>
          <option id="retailPercentOption"><span id="retailPercent"><span/></option>
         <option  id="wholePercentOption"><span id="wholePercent"><span/></option>
       </select>
@@ -55,7 +57,8 @@
         <p>السعر بالليرة السورية بعد الربح : <span id="sypProfitPrice" style="font-weight: bold;"></span></p>
       </div>
 
-      <label class="form-label block-label">الكمية :</label>
+      <label class="form-label block-label">الكمية : <p style="font-size:small;color:gray; margin:0;display:inline;">عدد القطع أو الوزن بالجرام</p>
+</label>
       <input type="number" name="quantity" id="quantityInput" min="1">
 
       <div id="totalPrices" class="details-container">

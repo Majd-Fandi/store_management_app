@@ -81,6 +81,7 @@
     font-size: 0.9em;
     background-color: white;
     border: 1px solid #eee;
+
 }
 
 .products-subtable th {
@@ -93,6 +94,7 @@
 .products-subtable td {
     padding: 8px 10px;
     color: #333;
+    border-bottom: 1px dashed #bbbbbb;
 }
 
 .no-products {

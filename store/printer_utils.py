@@ -25,23 +25,23 @@ def print_receipt_usb(serial_number, cart_items, total_payable, date_str):
         p.text("SALES RECEIPT\n")
         
         # Reset to normal font
-        p.text("=" * 24 + "\n\n")
+        p.text("=" * 24 + "\n")
         p.set(align='left', double_height=False, double_width=False,normal_textsize=True, bold=False)
         
         # RECEIPT DETAILS - NORMAL FONT
         p.text(f"Receipt No: {serial_number}\n")
         p.text('\n')
         p.text(f"Date: {date_str}\n")
-        p.text("-" * 48 + "\n\n")
-        
-        # ITEMS HEADER
-        p.set(bold=True)
-        # p.text(f"{'PRICE':<15}{'QTY':>3}{'ITEM':>30}\n")
-        p.text(f"{'PRICE':<9}{'QTY':>9}{'ITEM':>30}\n")
-        p.set(bold=False)
         p.text("-" * 48 + "\n")
         
+        # ITEMS HEADER
+        # p.set(bold=True)
+        # p.text(f"{'PRICE':<15}{'QTY':>3}{'ITEM':>30}\n")
+        # p.set(bold=False)
+        # p.text("-" * 48 + "\n")
+        
         # ITEMS LIST
+        p.set(align='right')
         for item in cart_items:
             name = item.get('product_name', 'N/A')
             qty = str(item.get('quantity', 0))
@@ -49,7 +49,7 @@ def print_receipt_usb(serial_number, cart_items, total_payable, date_str):
             
             p._raw(b'\x1B\x74\x21')
             # line=f"{name:<30}{qty:>3}{price:>15}\n\n"
-            line=f"{name:<30}{qty:>9}{price:>9}\n\n"
+            line=f"{name} /{qty}/ {price}\n"
             p._raw(line.encode(ARABIC_EENCODING))
         
         p.text("-" * 48 + "\n\n")
@@ -61,10 +61,10 @@ def print_receipt_usb(serial_number, cart_items, total_payable, date_str):
         except ValueError:
             total_str = "0"
         
-        p.text(f"{total_str} SYP\n\n")
+        p.text(f"{total_str} SYP\n")
         
         # Feed and cut
-        p.text("\n" * 3)
+        # p.text("\n" * 3)
         p.cut()
         p.close()
         
@@ -76,3 +76,4 @@ def print_receipt_usb(serial_number, cart_items, total_payable, date_str):
         except:
             pass
         return False, f"Error: {str(e)}"
+    

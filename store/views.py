@@ -272,7 +272,6 @@ def remove_classification(request, classification_id):
 #     })
 
 from django.db import IntegrityError
-from django.db import transaction
 
 def add_product(request):
     if request.method == "POST":
@@ -360,7 +359,7 @@ def add_product(request):
         else:  # product_type == "one" (مفرد)
             try:
                 entered_quantity = int(quantity_str)
-                if entered_quantity <= 0:
+                if entered_quantity < 0:
                     raise ValueError
             except ValueError:
                 return render_error('الكمية (عدد القطع) يجب أن يكون رقماً صحيحاً وموجباً')
@@ -729,9 +728,57 @@ def sell_product(request):
 
 
 
+# def list_sales(request):
+#     # here 
+#     sales_message=""
+#     current_year = datetime.now().year
+#     months = [(i, f"{i:02d}") for i in range(1, 13)]  # List of tuples
+#     sales = Sale.objects.all()
+
+#     # Get the date range from the request
+#     start_date = request.GET.get('start_date')
+#     end_date = request.GET.get('end_date')
+#     single_date = request.GET.get('single_date')
+
+#     if start_date and end_date:
+#         # Convert string dates to datetime objects using the correct format
+#         start_date = datetime.strptime(start_date, '%Y-%m-%d')
+#         end_date = datetime.strptime(end_date, '%Y-%m-%d')
+
+#         # Include the end date by setting the time to the end of the day
+#         end_date = end_date.replace(hour=23, minute=59, second=59)
+
+#         sales_message = f'المبيعات من تاريخ {start_date.strftime("%d/%m/%Y")} إلى تاريخ {end_date.strftime("%d/%m/%Y")}'
+#         # Filter sales within the date range
+#         sales = sales.filter(date__range=[start_date, end_date])
+#     elif single_date:
+#         # Convert single date to datetime object using the correct format
+#         single_date = datetime.strptime(single_date, '%Y-%m-%d')
+#         sales = sales.filter(date=single_date)
+#         sales_message = f'المبيعات في تاريخ {single_date.strftime("%d/%m/%Y")}'
+
+
+#     if  not start_date and not end_date and not single_date: #no filters => latest 20 sales
+#         sales = sales.order_by('-date', '-id')[:20]
+#         sales_message='اخر عمليات البيع'
+
+#     sales_data = []
+
+#     for sale in sales:
+#         total_items = SaleItem.objects.filter(sale=sale).aggregate(total=Sum('quantity'))['total'] or 0
+#         total_price = sum(item.price_at_sale * item.quantity for item in SaleItem.objects.filter(sale=sale))
+#         total_price_syp = sum(item.price_at_sale * item.quantity * item.dollar_rate_at_sale for item in SaleItem.objects.filter(sale=sale))
+#         sales_data.append({
+#             'sale': sale,
+#             'total_items': total_items,
+#             'total_price': total_price,
+#             'total_price_syp': total_price_syp
+#         })
+
+#     return render(request, 'store/list_sales.html', {'sales_message':sales_message,'sales_data': sales_data,'current_year': current_year,'months': months})
+
 def list_sales(request):
-    # here 
-    sales_message=""
+    sales_message = ""
     current_year = datetime.now().year
     months = [(i, f"{i:02d}") for i in range(1, 13)]  # List of tuples
     sales = Sale.objects.all()
@@ -740,8 +787,23 @@ def list_sales(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     single_date = request.GET.get('single_date')
+    sale_id = request.GET.get('sale_id')  # Get sale_id from request
 
-    if start_date and end_date:
+    # Handle sale_id search first (highest priority)
+    if sale_id:
+        try:
+            sale_id_int = int(sale_id)
+            sales = sales.filter(id=sale_id_int)
+            if sales.exists():
+                sales_message = f'نتائج البحث عن العملية رقم {sale_id}'
+            else:
+                sales_message = f'لا توجد عملية بيع بالرقم {sale_id}'
+        except ValueError:
+            sales_message = 'رقم العملية غير صالح'
+            sales = Sale.objects.none()
+    
+    # If no sale_id search, apply date filters
+    elif start_date and end_date:
         # Convert string dates to datetime objects using the correct format
         start_date = datetime.strptime(start_date, '%Y-%m-%d')
         end_date = datetime.strptime(end_date, '%Y-%m-%d')
@@ -757,11 +819,11 @@ def list_sales(request):
         single_date = datetime.strptime(single_date, '%Y-%m-%d')
         sales = sales.filter(date=single_date)
         sales_message = f'المبيعات في تاريخ {single_date.strftime("%d/%m/%Y")}'
-
-
-    if  not start_date and not end_date and not single_date: #no filters => latest 20 sales
+    
+    # If no filters applied, show latest 20 sales
+    elif not start_date and not end_date and not single_date and not sale_id:
         sales = sales.order_by('-date', '-id')[:20]
-        sales_message='اخر عمليات البيع'
+        sales_message = 'اخر عمليات البيع'
 
     sales_data = []
 
@@ -776,9 +838,12 @@ def list_sales(request):
             'total_price_syp': total_price_syp
         })
 
-    return render(request, 'store/list_sales.html', {'sales_message':sales_message,'sales_data': sales_data,'current_year': current_year,'months': months})
-
-
+    return render(request, 'store/list_sales.html', {
+        'sales_message': sales_message,
+        'sales_data': sales_data,
+        'current_year': current_year,
+        'months': months
+    })
 # =======================================================================================
 # =======================================================================================
 # =======================================================================================
@@ -1477,7 +1542,9 @@ def print_receipt(request, serial_number):
         if item.product.is_weight:
             # Convert from grams to Kg with 2 decimal places
             display_quantity = item.quantity / 1000
-            display_quantity_str = f"{display_quantity:.2f} kg"  # 2 decimal places + " kg"
+            # display_quantity_str = f"{display_quantity:.2f} Kg"  # 2 decimal places + " kg"
+            # display_quantity_str = f"{display_quantity:.2f}Kg"  # 2 decimal places + " kg"
+            display_quantity_str = f"{display_quantity:.2f} كغ"  # 2 decimal places + " kg"
         else:
             # For non-weight products, just show the quantity
             display_quantity = item.quantity
@@ -1495,7 +1562,7 @@ def print_receipt(request, serial_number):
     # Format the final payable price
     payable_display = sale.total_payable_price
     date_display = datetime.now().strftime("%Y-%m-%d %I:%M %p")
-    print(printer_items)
+    # print(printer_items)
     # 4. Trigger the Print
     success, msg = print_receipt_usb(
         serial_number=serial_number,
