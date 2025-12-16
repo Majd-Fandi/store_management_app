@@ -1026,7 +1026,7 @@ def generate_pdf(request):
         elements.append(sales_title)
 
         # Sales Table Data (Table 1)
-        sales_table_data = [['Sale ID', 'Date', 'Total Items', 'Total Price (Sell)', 'Total Price (Buy)', 'Profit (Gross)']]
+        sales_table_data = [['Sale ID', 'Date', 'Price (Buy)', 'Price (Sell)', 'Profit']]
 
         if not sales_data:
             sales_table_data.append(['No Sales Found', '', '', '', '', ''])
@@ -1035,22 +1035,24 @@ def generate_pdf(request):
                 sales_table_data.append([
                     data['sale_id'],
                     data['date'],
-                    data['total_items'],
-                    f"{data['total_price_sell_syp']:,.0f}",
+                    # data['total_items'],
                     f"{data['total_price_buy_syp']:,.0f}",
+                    f"{data['total_price_sell_syp']:,.0f}",
                     f"{data['total_profit']:,.0f}",
                 ])
 
             # Add totals row
             sales_table_data.append([
-                Paragraph("<b>TOTAL</b>", styles['Normal']), '',
-                f"{total_quantity_sum}",
-                f"{total_sell_sum:,.0f}",
+                # Paragraph("<b>Total</b>", styles['Normal']), '',
+                '',
+                '',
+                # f"{total_quantity_sum}",
                 f"{total_buy_sum:,.0f}",
+                f"{total_sell_sum:,.0f}",
                 f"{total_profit_sum:,.0f}",
             ])
 
-        sales_table = Table(sales_table_data, colWidths=[60, 60, 60, 100, 100, 100])
+        sales_table = Table(sales_table_data, colWidths=[90, 60, 100, 100, 100])
 
         # Sales Table Styling (Unchanged)
         sales_table.setStyle(TableStyle([
@@ -1058,7 +1060,7 @@ def generate_pdf(request):
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
             ('FONTSIZE', (0, 0), (-1, 0), 10), # Reduced font size for better fit
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('TOPPADDING', (0, 0), (-1, 0), 8),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
             ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
