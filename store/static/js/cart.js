@@ -92,112 +92,225 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===============================================
     // UPDATED calculatePrices Function
     // ===============================================
-    function calculatePrices() {
-        const saleType = SaleTypeSelect.value;
-        const selectedProductName = productSearchInput.value;
-        const selectedOption = productDatalist.querySelector(`option[value="${selectedProductName}"]`);
+    // function calculatePrices() {
+    //     const saleType = SaleTypeSelect.value;
+    //     const selectedProductName = productSearchInput.value;
+    //     const selectedOption = productDatalist.querySelector(`option[value="${selectedProductName}"]`);
 
-        // Default values for calculations if no product is selected or input is invalid
-        let productId = 0;
-        let productName = productSearchInput.placeholder;
-        let originalPrice = 0;
-        let sypPrice = 0;
-        let availableQuantity = 0;
-        let retailPercent = 0;
-        let wholePercent = 0;
-        let isWeight = false; // Add this variable
+    //     // Default values for calculations if no product is selected or input is invalid
+    //     let productId = 0;
+    //     let productName = productSearchInput.placeholder;
+    //     let originalPrice = 0;
+    //     let sypPrice = 0;
+    //     let availableQuantity = 0;
+    //     let retailPercent = 0;
+    //     let wholePercent = 0;
+    //     let isWeight = false; // Add this variable
 
-        if (selectedOption) {
-            // Product is selected, extract data attributes
-            productId = selectedOption.getAttribute('data-id');
-            productName = selectedProductName;
-            originalPrice = parseFloat(selectedOption.getAttribute('data-price')) || 0;
-            sypPrice = parseFloat(selectedOption.getAttribute('data-syp-price')) || 0;
-            isWeight = selectedOption.getAttribute('date-is-weight') === 'True';
-            availableQuantity = parseInt(selectedOption.getAttribute('data-qty')) || 0;
-            retailPercent = selectedOption.getAttribute('retail-percent');
-            wholePercent = selectedOption.getAttribute('whole-percent');
+    //     if (selectedOption) {
+    //         // Product is selected, extract data attributes
+    //         productId = selectedOption.getAttribute('data-id');
+    //         productName = selectedProductName;
+    //         originalPrice = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+    //         sypPrice = parseFloat(selectedOption.getAttribute('data-syp-price')) || 0;
+    //         isWeight = selectedOption.getAttribute('data-is-weight') === 'True';
+    //         availableQuantity = parseInt(selectedOption.getAttribute('data-qty')) || 0;
+    //         retailPercent = selectedOption.getAttribute('retail-percent');
+    //         wholePercent = selectedOption.getAttribute('whole-percent');
 
-            productSelect.value = productId;
-        } else {
-            productSelect.value = 0;
-        }
+    //         productSelect.value = productId;
+    //     } else {
+    //         productSelect.value = 0;
+    //     }
 
-        const profitPercentage = parseFloat(profitSelect.value) / 100;
+    //     const profitPercentage = parseFloat(profitSelect.value) / 100;
 
-        // --- FIX for Quantity Typing Issue ---
-        let quantity = parseInt(quantityInput.value);
-        if (isNaN(quantity) || quantity < 0) {
-            quantity = 0; // Treat empty/invalid/negative as 0 for calculation
-            // We DO NOT reset quantityInput.value here
-        }
-        // --- END FIX ---
+    //     // --- FIX for Quantity Typing Issue ---
+    //     let quantity = parseInt(quantityInput.value);
+    //     if (isNaN(quantity) || quantity < 0) {
+    //         quantity = 0; // Treat empty/invalid/negative as 0 for calculation
+    //         // We DO NOT reset quantityInput.value here
+    //     }
+    //     // --- END FIX ---
         
-        // --- Calculation and Display ---
-        // productQuantity.textContent = availableQuantity;
-        if (isWeight) {
+    //     // --- Calculation and Display ---
+    //     // productQuantity.textContent = availableQuantity;
+    //     if (isWeight) {
+    //     // Convert from grams to Kg and display with 3 decimal places
+    //     const quantityInKg = (availableQuantity / 1000).toFixed(2);
+    //     productQuantity.textContent = `${quantityInKg} Kg`;
+    //     } else {
+    //     productQuantity.textContent = availableQuantity;
+    //     }
+
+
+    //     originalPriceSpan.textContent = originalPrice.toFixed(4);
+    //     sypPriceSpan.textContent = formatNumberWithCommas(sypPrice.toFixed(0));
+
+    //     const profitPrice = originalPrice * (1 + profitPercentage);
+    //     const sypProfitPrice = sypPrice * (1 + profitPercentage);
+
+    //     // profitPriceSpan.textContent = profitPrice.toFixed(4);
+    //     // sypProfitPriceSpan.textContent = formatNumberWithCommas(sypProfitPrice.toFixed(0));
+
+    //     profitPriceSpan.textContent = Number.isNaN(profitPrice) ? "- - -" : profitPrice.toFixed(4);
+    //     sypProfitPriceSpan.textContent = Number.isNaN(sypProfitPrice)
+    //         ? "- - -"
+    //         : formatNumberWithCommas(sypProfitPrice.toFixed(0));
+
+    //     var totalPrice = profitPrice * quantity;
+    //     var totalSypPrice = sypProfitPrice * quantity;
+    //     if (selectedOption.getAttribute('data-is-weight') === 'True') {
+    //         totalPrice = profitPrice*quantity/1000;
+    //         totalSypPrice = sypProfitPrice*quantity/1000;
+    //     }
+
+    //     // totalPriceSpan.textContent = totalPrice.toFixed(4);
+    //     // totalSypPriceSpan.textContent = formatNumberWithCommas(totalSypPrice.toFixed(0));
+
+    //     totalPriceSpan.textContent = Number.isNaN(totalPrice) ? "- - -" : totalPrice.toFixed(4);
+    //     totalSypPriceSpan.textContent = Number.isNaN(totalSypPrice)
+    //         ? "- - -"
+    //         : formatNumberWithCommas(totalSypPrice.toFixed(0));
+
+
+
+
+    //     retailPercentOption.value = retailPercent;
+    //     wholePercentOption.value = wholePercent;
+
+    //     if (saleType === "0") { // Retail sale (مفرق)
+    //         retailPercentText.textContent = retailPercent + " % " + "(النسبة المقترحة)";
+    //         wholePercentText.textContent = wholePercent + " % ";
+    //     } else { // Wholesale sale (جملة)
+    //         wholePercentText.textContent = wholePercent + " % " + "(النسبة المقترحة)";
+    //         retailPercentText.textContent = retailPercent + " % ";
+    //     }
+
+    //     return {
+    //         productId: productId,
+    //         productName: productName,
+    //         quantity: quantity, // Return the 'safe' quantity (0 or positive)
+    //         profitPercentage: profitSelect.value,
+    //         originalPrice: originalPrice,
+    //         sypPrice: sypPrice,
+    //         profitPrice: profitPrice,
+    //         sypProfitPrice: sypProfitPrice,
+    //         totalPrice: totalPrice,
+    //         totalSypPrice: totalSypPrice,
+    //         availableQuantity: availableQuantity,
+    //         isWeight: isWeight,//newly added 
+    //     };
+    // }
+
+
+
+function calculatePrices() {
+    const saleType = SaleTypeSelect.value;
+    const selectedProductName = productSearchInput.value;
+    const selectedOption = productDatalist.querySelector(`option[value="${selectedProductName}"]`);
+
+    // Default values for calculations if no product is selected or input is invalid
+    let productId = 0;
+    let productName = productSearchInput.placeholder;
+    let originalPrice = 0;
+    let sypPrice = 0;
+    let availableQuantity = 0;
+    let retailPercent = 0;
+    let wholePercent = 0;
+    let isWeight = false;
+
+    if (selectedOption) {
+        // Product is selected, extract data attributes
+        productId = selectedOption.getAttribute('data-id');
+        productName = selectedProductName;
+        originalPrice = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+        sypPrice = parseFloat(selectedOption.getAttribute('data-syp-price')) || 0;
+        isWeight = selectedOption.getAttribute('data-is-weight') === 'True';
+        availableQuantity = parseInt(selectedOption.getAttribute('data-qty')) || 0;
+        retailPercent = selectedOption.getAttribute('retail-percent');
+        wholePercent = selectedOption.getAttribute('whole-percent');
+
+        productSelect.value = productId;
+    } else {
+        productSelect.value = 0;
+    }
+
+    const profitPercentage = parseFloat(profitSelect.value) / 100;
+
+    // --- FIX for Quantity Typing Issue ---
+    let quantity = parseInt(quantityInput.value);
+    if (isNaN(quantity) || quantity < 0) {
+        quantity = 0;
+    }
+    // --- END FIX ---
+    
+    // --- Calculation and Display ---
+    if (isWeight) {
         // Convert from grams to Kg and display with 3 decimal places
         const quantityInKg = (availableQuantity / 1000).toFixed(2);
         productQuantity.textContent = `${quantityInKg} Kg`;
-        } else {
+    } else {
         productQuantity.textContent = availableQuantity;
-        }
-
-
-        originalPriceSpan.textContent = originalPrice.toFixed(4);
-        sypPriceSpan.textContent = formatNumberWithCommas(sypPrice.toFixed(0));
-
-        const profitPrice = originalPrice * (1 + profitPercentage);
-        const sypProfitPrice = sypPrice * (1 + profitPercentage);
-
-        // profitPriceSpan.textContent = profitPrice.toFixed(4);
-        // sypProfitPriceSpan.textContent = formatNumberWithCommas(sypProfitPrice.toFixed(0));
-
-        profitPriceSpan.textContent = Number.isNaN(profitPrice) ? "- - -" : profitPrice.toFixed(4);
-        sypProfitPriceSpan.textContent = Number.isNaN(sypProfitPrice)
-            ? "- - -"
-            : formatNumberWithCommas(sypProfitPrice.toFixed(0));
-
-        const totalPrice = profitPrice * quantity;
-        const totalSypPrice = sypProfitPrice * quantity;
-
-        // totalPriceSpan.textContent = totalPrice.toFixed(4);
-        // totalSypPriceSpan.textContent = formatNumberWithCommas(totalSypPrice.toFixed(0));
-
-        totalPriceSpan.textContent = Number.isNaN(totalPrice) ? "- - -" : totalPrice.toFixed(4);
-        totalSypPriceSpan.textContent = Number.isNaN(totalSypPrice)
-            ? "- - -"
-            : formatNumberWithCommas(totalSypPrice.toFixed(0));
-
-
-
-
-        retailPercentOption.value = retailPercent;
-        wholePercentOption.value = wholePercent;
-
-        if (saleType === "0") { // Retail sale (مفرق)
-            retailPercentText.textContent = retailPercent + " % " + "(النسبة المقترحة)";
-            wholePercentText.textContent = wholePercent + " % ";
-        } else { // Wholesale sale (جملة)
-            wholePercentText.textContent = wholePercent + " % " + "(النسبة المقترحة)";
-            retailPercentText.textContent = retailPercent + " % ";
-        }
-
-        return {
-            productId: productId,
-            productName: productName,
-            quantity: quantity, // Return the 'safe' quantity (0 or positive)
-            profitPercentage: profitSelect.value,
-            originalPrice: originalPrice,
-            sypPrice: sypPrice,
-            profitPrice: profitPrice,
-            sypProfitPrice: sypProfitPrice,
-            totalPrice: totalPrice,
-            totalSypPrice: totalSypPrice,
-            availableQuantity: availableQuantity,
-            isWeight: isWeight,//newly added 
-        };
     }
+
+    originalPriceSpan.textContent = originalPrice.toFixed(4);
+    sypPriceSpan.textContent = formatNumberWithCommas(sypPrice.toFixed(0));
+
+    const profitPrice = originalPrice * (1 + profitPercentage);
+    const sypProfitPrice = sypPrice * (1 + profitPercentage);
+
+    profitPriceSpan.textContent = Number.isNaN(profitPrice) ? "- - -" : profitPrice.toFixed(4);
+    sypProfitPriceSpan.textContent = Number.isNaN(sypProfitPrice)
+        ? "- - -"
+        : formatNumberWithCommas(sypProfitPrice.toFixed(0));
+
+    // --- CALCULATE TOTALS BASED ON WEIGHT OR UNIT ---
+    let totalPrice, totalSypPrice;
+    
+    if (isWeight) {
+        // For weight-based products: quantity is in grams, divide by 1000 to get KG
+        totalPrice = profitPrice * quantity / 1000;
+        totalSypPrice = sypProfitPrice * quantity / 1000;
+    } else {
+        // For unit-based products: simple multiplication
+        totalPrice = profitPrice * quantity;
+        totalSypPrice = sypProfitPrice * quantity;
+    }
+
+    totalPriceSpan.textContent = Number.isNaN(totalPrice) ? "- - -" : totalPrice.toFixed(4);
+    totalSypPriceSpan.textContent = Number.isNaN(totalSypPrice)
+        ? "- - -"
+        : formatNumberWithCommas(totalSypPrice.toFixed(0));
+
+    retailPercentOption.value = retailPercent;
+    wholePercentOption.value = wholePercent;
+
+    if (saleType === "0") { // Retail sale (مفرق)
+        retailPercentText.textContent = retailPercent + " % " + "(النسبة المقترحة)";
+        wholePercentText.textContent = wholePercent + " % ";
+    } else { // Wholesale sale (جملة)
+        wholePercentText.textContent = wholePercent + " % " + "(النسبة المقترحة)";
+        retailPercentText.textContent = retailPercent + " % ";
+    }
+
+    return {
+        productId: productId,
+        productName: productName,
+        quantity: quantity,
+        profitPercentage: profitSelect.value,
+        originalPrice: originalPrice,
+        sypPrice: sypPrice,
+        profitPrice: profitPrice,
+        sypProfitPrice: sypProfitPrice,
+        totalPrice: totalPrice,          // This now contains the correct calculated total
+        totalSypPrice: totalSypPrice,    // This now contains the correct calculated total
+        availableQuantity: availableQuantity,
+        isWeight: isWeight,
+    };
+}
+
+
 
     // ===============================================
     // Cart Summary and Rendering (Logic remains the same)

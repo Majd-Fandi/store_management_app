@@ -89,13 +89,17 @@
             {% comment %} {% if product.description %}
               <p class="description">{{ product.description }}</p>
             {% endif %} {% endcomment %}
-             {% if product.is_weight %}
+             <p><strong>{{ product.price|floatformat:4|intcomma }} = {{ product.syp_price|floatformat:0|intcomma }}</strong> (NET)</p>
+           
+             {% comment %} {% if product.is_weight %}
              <p><strong>سعر الكيلو :</strong> $ {{ product.price|mul:1000|floatformat:4|intcomma }}</p>
+             <p>سعر الكيلو =<strong> $ {{ product.price|floatformat:4|intcomma }}</strong></p>
             <p><strong>سعر الكيلو بالليرة :</strong> SYP {{ product.syp_price|mul:1000|floatformat:0|intcomma }}</p>
+            <p>سعر الكيلو  =<strong> SYP {{ product.syp_price|floatformat:0|intcomma }} </strong></p>
              {% else %}
-             <p><strong>سعر القطعة :</strong> $ {{ product.price }}</p>
-             <p><strong>سعر القطعة بالليرة :</strong> SYP {{ product.syp_price|intcomma }}</p>
-             {% endif %}
+             <p>سعر القطعة =<strong> $ {{ product.price }}</strong></p>
+             <p>سعر القطعة =<strong> SYP {{ product.syp_price|intcomma }}</strong></p>
+             {% endif %} {% endcomment %}
             <p>
               <strong>الكمية المتوفرة :</strong> 
               <span class="{% if product.quantity < minimum_value %}low-quantity{% else %}high-quantity{% endif %}">

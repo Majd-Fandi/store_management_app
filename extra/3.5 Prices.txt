@@ -11,3 +11,11 @@ Query tool on the database : database.schema.table
 -- Update price by subtracting 3.5% (multiplying by 0.965)
 UPDATE your_table_name
 SET price = ROUND(price * 0.965, 4);
+
+the old approach was causing problems : solution : subtract 3.3816% at first 
+
+UPDATE store_product
+SET price = price * 0.9662;
+
+
+NOTE : you have to enter the weight products prices again before applying the new price !

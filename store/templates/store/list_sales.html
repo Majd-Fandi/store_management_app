@@ -44,8 +44,8 @@
         <tr>
             <th>رقم عملية البيع</th>
             <th>التاريخ</th>
-            <th>إجمالي العناصر</th>
-            <th>إجمالي السعر</th>
+            {% comment %} <th>إجمالي العناصر</th> {% endcomment %}
+            <th>إجمالي السعر $</th>
             <th>إجمالي السعر بالليرة</th>
             <th>المبلغ الحقيقي</th>
             <th>الإجراءات</th>
@@ -54,12 +54,12 @@
     <tbody>
         {% for data in sales_data %}
             <tr>
-                <td>{{ data.sale.id }}</td>
+                <td><strong>{{ data.sale.id }}</strong></td>
                 <td>{{ data.sale.date|date:"Y/m/d" }}</td>
-                <td>{{ data.total_items }}</td>
-                <td>{{ data.total_price }}</td>
-                <td>{{ data.total_price_syp|floatformat:0|intcomma }}</td>
-                <td>{{ data.sale.total_payable_price|floatformat:0|intcomma }}</td>
+                {% comment %} <td>{{ data.total_items }}</td> {% endcomment %}
+                <td><strong>{{ data.total_price }}</strong></td>
+                <td><strong>{{ data.total_price_syp|floatformat:0|intcomma }}</strong></td>
+                <td><strong>{{ data.sale.total_payable_price|floatformat:0|intcomma }}</strong></td>
                 <td><a href="{% url 'sale_detail' data.sale.id %}">عرض التفاصيل</a></td>
             </tr>
         {% empty %}

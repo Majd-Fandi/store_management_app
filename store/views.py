@@ -2,13 +2,14 @@
 from decimal import Decimal
 from datetime import datetime
 from io import BytesIO
-
 # Third-Party Library Imports (Django, ReportLab, Pandas, etc.)
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Sum, Q, F, Count
 from django.db.models.functions import TruncDay
+from django.db import IntegrityError
 from django.forms import formset_factory
+from django.utils import timezone
 
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -19,8 +20,9 @@ import json
 import pandas as pd
 
 # Local Application/Project Imports
-from .models import Product, Settings, Sale, SaleItem, Classification,FinancialBox
-from .forms import ProductBulkAddForm, ProductForm, DateRangeForm
+from .models import Product, Settings, Sale, SaleItem, Classification,FinancialBox,Trader,Transaction
+from .forms import ProductBulkAddForm, ProductForm, DateRangeForm,TraderForm, TransactionForm
+
 
 # =======================================================================================
 
@@ -271,7 +273,7 @@ def remove_classification(request, classification_id):
 #         'classifications': Classification.objects.all()
 #     })
 
-from django.db import IntegrityError
+
 
 def add_product(request):
     if request.method == "POST":
@@ -350,7 +352,8 @@ def add_product(request):
             
             # Price per gram (or per kg depending on your business logic)
             # If price is entered per kg, store price per gram
-            final_price_per_unit = entered_price / 1000  # Price per gram
+            # final_price_per_unit = entered_price / 1000  # Price per gram
+            final_price_per_unit = entered_price  # Price per gram
             
             # Option 2: Store in kg with decimal
             # final_quantity_of_items = entered_quantity  # Store as decimal kg
@@ -580,18 +583,6 @@ def add_classification(request):
     # but for a simple modal, you'll likely just use the template below.
     return render(request, 'store/add_classification.html')
 
-# def add_classification(request):
-#     if request.method == "POST":
-#         category = request.POST['category']
-#         if category:
-#             Classification.objects.create(category=category)
-#             return redirect('classifications_list')
-#         else:
-#             return render(request, 'store/add_classification.html', {
-#                 'error': 'الرجاء تعبئة الحقول المطلوبة',
-#             })
-#     return render(request, 'store/add_classification.html')
-
 
 # =======================================================================================
 # =======================================================================================
@@ -603,8 +594,6 @@ def remove_product(request, product_id):
     # product.delete()
     product.safe_delete()
     return redirect('product_list')
-
-
 
 
 # =======================================================================================
@@ -777,6 +766,11 @@ def sell_product(request):
 
 #     return render(request, 'store/list_sales.html', {'sales_message':sales_message,'sales_data': sales_data,'current_year': current_year,'months': months})
 
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
+
 def list_sales(request):
     sales_message = ""
     current_year = datetime.now().year
@@ -829,8 +823,17 @@ def list_sales(request):
 
     for sale in sales:
         total_items = SaleItem.objects.filter(sale=sale).aggregate(total=Sum('quantity'))['total'] or 0
-        total_price = sum(item.price_at_sale * item.quantity for item in SaleItem.objects.filter(sale=sale))
-        total_price_syp = sum(item.price_at_sale * item.quantity * item.dollar_rate_at_sale for item in SaleItem.objects.filter(sale=sale))
+        total_price=0
+        total_price_syp=0
+        for item in SaleItem.objects.filter(sale=sale):
+            if item.product.is_weight:
+                total_price+=item.price_at_sale * item.quantity/1000
+                total_price_syp+=item.price_at_sale * item.quantity/1000 * item.dollar_rate_at_sale
+            else:
+                total_price+=item.price_at_sale * item.quantity
+                total_price_syp+=item.price_at_sale * item.quantity * item.dollar_rate_at_sale
+        # total_price = sum(item.price_at_sale * item.quantity for item in SaleItem.objects.filter(sale=sale))
+        # total_price_syp = sum(item.price_at_sale * item.quantity * item.dollar_rate_at_sale for item in SaleItem.objects.filter(sale=sale))
         sales_data.append({
             'sale': sale,
             'total_items': total_items,
@@ -863,7 +866,13 @@ def sale_detail(request, sale_id):
     sale_item_details = []
     all_items_price_syp = 0
     for item in sale_items:
-        total_price = item.price_at_sale * item.quantity  # Use the captured price
+        is_weight = item.product.is_weight
+        total_price=0
+        if is_weight:
+            total_price = item.price_at_sale * item.quantity/1000
+        else:
+            total_price = item.price_at_sale * item.quantity 
+
         all_items_price_syp += total_price * item.dollar_rate_at_sale
         sale_item_details.append({
             'product': item.product,
@@ -963,7 +972,7 @@ def generate_pdf(request):
         except (TypeError, ValueError):
             return HttpResponse("Invalid dates", status=400)
 
-        # 1. SALES DATA PROCESSING (Unchanged from your code)
+        # 1. SALES DATA PROCESSING 
         sales_data = []
         sales = Sale.objects.filter(date__range=(start_date, end_date)).order_by('date')
         
@@ -977,14 +986,20 @@ def generate_pdf(request):
 
             total_items = items.aggregate(total=Sum('quantity'))['total'] or 0
 
-            total_sell_price_syp = 0
+            # total_sell_price_syp = 0
+            total_sell_price_syp = sale.total_payable_price
             total_buy_price_syp = 0
 
             for item in items:
-                sell_price_syp = item.price_at_sale * item.quantity * item.dollar_rate_at_sale
-                buy_price_syp = item.product.price * item.quantity * item.dollar_rate_at_sale
-
-                total_sell_price_syp += sell_price_syp
+                # sell_price_syp = item.price_at_sale * item.quantity * item.dollar_rate_at_sale
+                # buy_price_syp = item.product.price * item.quantity * item.dollar_rate_at_sale
+                buy_price_syp = 0
+                if item.product.is_weight:
+                    buy_price_syp = item.product.price * item.quantity/1000 * item.dollar_rate_at_sale
+                else:
+                    buy_price_syp = item.product.price * item.quantity * item.dollar_rate_at_sale
+                    
+                # total_sell_price_syp += sell_price_syp
                 total_buy_price_syp += buy_price_syp
 
             profit = total_sell_price_syp - total_buy_price_syp
@@ -1086,6 +1101,11 @@ def generate_pdf(request):
         return response
     
     return HttpResponse("This view only accepts POST requests with date parameters.", status=405)
+
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
 
 # def generate_pdf(request):
 #     if request.method == 'POST':
@@ -1369,7 +1389,10 @@ def sales_statistics(request):
 #     return render(request, 'store/add_bulk_products.html', {'formset': formset})
 
 
-# store/views.py
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
 
 def add_bulk_products(request):
     
@@ -1409,26 +1432,10 @@ def add_bulk_products(request):
 
     return render(request, 'store/add_bulk_products.html', {'formset': formset})
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.forms import modelformset_factory
-from .models import Trader, Transaction
-from .forms import TraderForm, TransactionForm
-from django.urls import reverse
-
-# --- Trader Management Views ---
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
 
 def trader_list(request):
     """Displays a list of all traders with their current balances."""
@@ -1519,53 +1526,50 @@ def add_transaction(request, trader_pk):
 
 
 
-# store/views.py
-from django.shortcuts import render, redirect, get_object_or_404
+
 from django.contrib import messages
-from .models import Sale, SaleItem, Settings # Import your models
 from .printer_utils import print_receipt_usb # Import the utility we made
 
 def print_receipt(request, serial_number):
     # 1. Fetch the Sale
     sale = get_object_or_404(Sale, id=serial_number)
-    
     # 2. Fetch the Items associated with this sale
     sale_items = SaleItem.objects.filter(sale=sale)
-    
     # 3. Prepare data for the printer
     printer_items = []
     
     for item in sale_items:
-        # Calculate Total SYP for this line: 
+        isWeight=item.product.is_weight
+        # Calculate Total SYP for each printer item : 
         syp_unit_price = item.price_at_sale * item.dollar_rate_at_sale
-        total_syp_line = syp_unit_price * item.quantity
+        total_syp_line=0
+        # handle weight and quantity products 
+        if isWeight:
+            total_syp_line = syp_unit_price * item.quantity/1000
+        else:
+            total_syp_line = syp_unit_price * item.quantity 
         
-        # Check if product is sold by weight
-        if item.product.is_weight:
+        if isWeight:
             # Convert from grams to Kg with 2 decimal places
             display_quantity = item.quantity / 1000
-            # display_quantity_str = f"{display_quantity:.2f} Kg"  # 2 decimal places + " kg"
-            # display_quantity_str = f"{display_quantity:.2f}Kg"  # 2 decimal places + " kg"
-            display_quantity_str = f"{display_quantity:.2f} كغ"  # 2 decimal places + " kg"
+            display_quantity_str = f"{display_quantity:.2f} كغ" 
         else:
             # For non-weight products, just show the quantity
             display_quantity = item.quantity
-            display_quantity_str = str(item.quantity)
+            display_quantity_str = str(display_quantity)
 
         printer_items.append({
             'product_name': item.product.name,
-            # 'quantity': item.quantity,  # Original quantity in grams/units
-            'quantity': display_quantity_str,  # Formatted for display
-            # 'display_quantity_raw': display_quantity,  # Numeric value for calculations if needed
+            'quantity': display_quantity_str,  # Formatted quantity for display
             'total_price': total_syp_line,
-            # 'is_weight': item.product.is_weight
         })
 
     # Format the final payable price
     payable_display = sale.total_payable_price
     date_display = datetime.now().strftime("%Y-%m-%d %I:%M %p")
-    # print(printer_items)
-    # 4. Trigger the Print
+    # print(printer_items) #Debug
+
+    # 4. Trigger the Printer
     success, msg = print_receipt_usb(
         serial_number=serial_number,
         cart_items=printer_items,
@@ -1579,6 +1583,11 @@ def print_receipt(request, serial_number):
         messages.error(request, f"خطأ في الطباعة: {msg}")
 
     return redirect('home')
+
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
 
 # def print_receipt(request, serial_number):
 #     # 1. Fetch the Sale
@@ -1636,9 +1645,9 @@ def print_receipt(request, serial_number):
 
 
 
-from django.utils import timezone
+
 def financial_box(request):
-    products = Product.objects.filter(is_active=True)
+    # products = Product.objects.filter(is_active=True)
     box = FinancialBox.objects.all().first()
     current_box_value=box.current_amount
     today = timezone.localdate()
@@ -1649,10 +1658,28 @@ def financial_box(request):
     )['total'] or 0
 
     dollar_rate = Settings.objects.filter(key='dollar_rate').first().value
+    # needs to take care of weight elements :  
+    # store_products_price = products.aggregate(
+    #     total=Sum(F('quantity') * F('price'))
+    # )['total'] or 0
 
-    store_products_price = products.aggregate(
+    store_products_price=0
+
+    weight_products_price = Product.objects.filter(
+        is_weight=True, 
+        is_active=True
+    ).aggregate(
+        total=Sum(F('quantity')/1000 * F('price'))
+    )['total'] or 0 
+
+    normal_products_price = Product.objects.filter(
+        is_weight=False, 
+        is_active=True
+    ).aggregate(
         total=Sum(F('quantity') * F('price'))
     )['total'] or 0
+    
+    store_products_price=weight_products_price+normal_products_price
 
     store_products_price_syp=store_products_price*dollar_rate
     return render(

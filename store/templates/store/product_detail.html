@@ -20,7 +20,7 @@
             <br>
             <label class="form-label" for="{{ form.price.id_for_label }}">السعر $ : 
                 {% if form.is_weight.value %}
-                <p style="font-size:small;color:gray; margin:0;display:inline;">Kg / 1000</p>
+                <p style="font-size:small;color:gray; margin:0;display:inline;">سعر الكيلو</p>
                 {% endif %}
             </label>
             
@@ -36,7 +36,7 @@
       
             <label class="form-label" for="{{ form.quantity.id_for_label }}">الكمية الحالية : 
                  {% if form.is_weight.value %}
-                <p style="font-size:small;color:gray; margin:0;display:inline;">Kg * 1000</p>
+                <p style="font-size:small;color:gray; margin:0;display:inline;">بالجرام</p>
                 {% endif %}
             </label>
             <br>
@@ -51,7 +51,7 @@
      
             <label class="form-label" for="{{ form.additional_quantity.id_for_label }}">الكمية الإضافية :
                  {% if form.is_weight.value %} 
-                <p style="font-size:small;color:gray; margin:0;display:inline;">Kg * 1000</p>
+                <p style="font-size:small;color:gray; margin:0;display:inline;">بالجرام</p>
                 {% endif %}
             </label>
             <br>
