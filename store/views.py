@@ -1,8 +1,7 @@
-# Standard Library Imports (Python Built-ins)
 from decimal import Decimal
 from datetime import datetime
 from io import BytesIO
-# Third-Party Library Imports (Django, ReportLab, Pandas, etc.)
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Sum, Q, F, Count
@@ -19,7 +18,6 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 import json
 import pandas as pd
 
-# Local Application/Project Imports
 from .models import Product, Settings, Sale, SaleItem, Classification,FinancialBox,Trader,Transaction
 from .forms import ProductBulkAddForm, ProductForm, DateRangeForm,TraderForm, TransactionForm
 
@@ -42,17 +40,12 @@ def product_list(request):
     # Get search and quantity filter from the request
     search_query = request.GET.get('search', '')
     quantity_filter = request.GET.get('quantity', '')
-    classification_filter = request.GET.get('classification', '') #new
+    classification_filter = request.GET.get('classification', '')
     minimum_setting = Settings.objects.filter(key='minimum').first().value
 
-
-    # Fetch all products initially
     # products = Product.objects.all()
     products = Product.objects.filter(is_active=True)
 
-    # store_products_price = products.aggregate(
-    #     total=Sum(F('quantity') * F('price'))
-    # )['total'] or 0
     # Fetch all classifications 
     classifications = Classification.objects.all()
 
@@ -74,9 +67,9 @@ def product_list(request):
     # Apply classification filter
     if classification_filter:
         if classification_filter=="no-category":
-            products=products.filter(classification=None) # no classification 
+            products=products.filter(classification=None)
         elif classification_filter=="weight-category":
-            products=products.filter(is_weight=True) # no classification 
+            products=products.filter(is_weight=True)
         else:
             products = products.filter(classification=classification_filter)
 
@@ -85,12 +78,12 @@ def product_list(request):
 
      # Fetch the setting with the key 'minimum'
     minimum_setting = Settings.objects.filter(key='minimum').first()
+
     return render(
         request,
         'store/product_list.html',
         {
             'products': products,
-            # 'store_products_price':store_products_price,
             'classifications':classifications,
             'search_query': search_query,
             'quantity_filter': quantity_filter,
@@ -105,26 +98,10 @@ def product_list(request):
 # =======================================================================================
 # =======================================================================================
 
-# def classifications_list(request):
-#     # Fetch all classifications and annotate them with the count of related products and sum of quantities
-#     classifications = Classification.objects.annotate(
-#         product_type_count=Count('product', distinct=True),  # Count distinct products
-#         all_types_count=Sum('product__quantity')  # Sum the quantities of related products
-#     ).order_by('category')
-
-#     return render(
-#         request,
-#         'store/classifications_list.html',
-#         {
-#             'classifications': classifications,
-#         },
-#     )
-
-
-
 def classifications_list(request):
     # Fetch all classifications and annotate them with the count of related products and sum of quantities
     # نستخدم prefetch_related لتحسين الأداء لاحقاً عند الوصول إلى المنتجات في القالب
+
     classifications = Classification.objects.annotate(
         product_type_count=Count('product', distinct=True),
         all_types_count=Sum('product__quantity')
@@ -152,135 +129,10 @@ def remove_classification(request, classification_id):
 # =======================================================================================
 # =======================================================================================
 # =======================================================================================
-# def add_product(request):
-#     if request.method == "POST":
-        
-#         # --- 1. Get All POST Data ---
-#         name = request.POST.get('name')
-#         product_type = request.POST.get('type') # Renamed 'type' to 'product_type' to avoid shadowing built-in 'type'
-#         items_per_package_str = request.POST.get('items_per_package')
-#         description = request.POST.get('description')
-#         price_str = request.POST.get('price')
-#         quantity_str = request.POST.get('quantity')
-#         classification_id = request.POST.get('classification')
-#         is_weight = product_type == 'weight'
-#         retail_sale_percent = request.POST.get('retail_sale_percent')
-#         whole_sale_percent = request.POST.get('whole_sale_percent')
-
-#         if not retail_sale_percent:
-#             retail_sale_percent = 5
-#         if not whole_sale_percent:
-#             whole_sale_percent = 3
-            
-#         # Helper to simplify error rendering
-#         def render_error(error_message):
-#             return render(request, 'store/add_product.html', {
-#                 'error': error_message,
-#                 'classifications': Classification.objects.all()
-#             })
-
-#         # --- 2. Basic Validation & Type Conversion ---
-#         if not all([name, price_str, quantity_str]):
-#             return render_error('الرجاء تعبئة الحقول المطلوبة (المادة و السعر و الكمية)')
-        
-#         try:
-#             entered_price = float(price_str)
-#         except ValueError:
-#             return render_error('السعر يجب أن يكون رقماً صالحاً')
-
-#         # --- 3. Handle Different Product Types ---
-#         final_price_per_unit = entered_price
-#         final_quantity_of_items = 0  # Will be calculated differently based on type
-
-#         if product_type == "many":
-#             if not items_per_package_str:
-#                 return render_error('يرجى تحديد عدد القطع في الطرد')
-            
-#             try:
-#                 items_per_package = int(items_per_package_str)
-#                 if items_per_package <= 0:
-#                     raise ValueError
-#                 entered_quantity = int(quantity_str)
-#                 if entered_quantity <= 0:
-#                     raise ValueError
-#             except ValueError:
-#                 return render_error('عدد القطع في الطرد والكمية يجب أن يكونا رقمين صحيحين وموجبين')
-
-#             # Calculation for the database:
-#             # Price per piece = Package Price / Items per Package
-#             final_price_per_unit = entered_price / items_per_package
-            
-#             # Total quantity of items = Number of Packages * Items per Package
-#             final_quantity_of_items = entered_quantity * items_per_package
-
-#         elif product_type == "weight":
-#             try:
-#                 # Allow decimal values for weight
-#                 entered_quantity = float(quantity_str)
-#                 if entered_quantity <= 0:
-#                     raise ValueError
-#             except ValueError:
-#                 return render_error('الكمية (Kg) يجب أن يكون رقماً موجباً')
-
-#             # For weight, convert to grams (or keep as kg depending on your needs)
-#             # Option 1: Store in grams (multiply by 1000)
-#             final_quantity_of_items = int(entered_quantity * 1000)  # Convert kg to grams
-            
-#             # Price per gram (or per kg depending on your business logic)
-#             # If price is entered per kg, store price per gram
-#             final_price_per_unit = entered_price / 1000  # Price per gram
-            
-#             # Option 2: Store in kg with decimal
-#             # final_quantity_of_items = entered_quantity  # Store as decimal kg
-#             # final_price_per_unit = entered_price  # Price per kg
-
-#         else:  # product_type == "one" (مفرد)
-#             try:
-#                 entered_quantity = int(quantity_str)
-#                 if entered_quantity <= 0:
-#                     raise ValueError
-#             except ValueError:
-#                 return render_error('الكمية (عدد القطع) يجب أن يكون رقماً صحيحاً وموجباً')
-            
-#             final_quantity_of_items = entered_quantity
-#             final_price_per_unit = entered_price
-
-#         # --- 4. Handle Classification Lookup ---
-#         classification = None
-#         if classification_id:
-#             try:
-#                 # Fetch the Classification instance using the ID
-#                 classification = Classification.objects.get(id=classification_id)
-#             except Classification.DoesNotExist:
-#                 return render_error('التصنيف المحدد غير صحيح')
-
-#         # --- 5. Create Product in Database ---
-#         Product.objects.create(
-#             is_weight=is_weight,
-#             name=name,
-#             description=description,
-#             price=final_price_per_unit,          # Store the calculated price per single item
-#             quantity=final_quantity_of_items,    # Store the calculated total quantity
-#             classification=classification,        # Pass the Classification instance or None
-#             retail_sale_percent=retail_sale_percent,
-#             whole_sale_percent=whole_sale_percent
-#         )
-        
-#         return redirect('add_product')
-        
-#     # --- GET Request ---
-#     return render(request, 'store/add_product.html', {
-#         'classifications': Classification.objects.all()
-#     })
-
-
-
 def add_product(request):
     if request.method == "POST":
-        
-        # --- 1. Get All POST Data ---
         name = request.POST.get('name')
-        product_type = request.POST.get('type') # Renamed 'type' to 'product_type' to avoid shadowing built-in 'type'
+        product_type = request.POST.get('type')
         items_per_package_str = request.POST.get('items_per_package')
         description = request.POST.get('description')
         price_str = request.POST.get('price')
@@ -353,7 +205,7 @@ def add_product(request):
             # Price per gram (or per kg depending on your business logic)
             # If price is entered per kg, store price per gram
             # final_price_per_unit = entered_price / 1000  # Price per gram
-            final_price_per_unit = entered_price  # Price per gram
+            final_price_per_unit = entered_price  # Price per Kg
             
             # Option 2: Store in kg with decimal
             # final_quantity_of_items = entered_quantity  # Store as decimal kg
@@ -411,146 +263,6 @@ def add_product(request):
     return render(request, 'store/add_product.html', {
         'classifications': Classification.objects.all()
     })
-# def add_product(request):
-#     if request.method == "POST":
-        
-#         # --- 1. Get All POST Data ---
-#         name = request.POST.get('name')
-#         product_type = request.POST.get('type') # Renamed 'type' to 'product_type' to avoid shadowing built-in 'type'
-#         items_per_package_str = request.POST.get('items_per_package')
-#         description = request.POST.get('description')
-#         price_str = request.POST.get('price')
-#         quantity_str = request.POST.get('quantity')
-#         classification_id = request.POST.get('classification')
-#         is_weight = product_type == 'weight'
-#         retail_sale_percent = request.POST.get('retail_sale_percent')
-#         whole_sale_percent = request.POST.get('whole_sale_percent')
-
-#         if not retail_sale_percent:
-#             retail_sale_percent = 5
-#         if not whole_sale_percent:
-#             whole_sale_percent = 3
-#         # Helper to simplify error rendering
-#         def render_error(error_message):
-#             return render(request, 'store/add_product.html', {
-#                 'error': error_message,
-#                 'classifications': Classification.objects.all()
-#             })
-
-#         # --- 2. Basic Validation & Type Conversion ---
-#         if not all([name, price_str, quantity_str]):
-#             return render_error('الرجاء تعبئة الحقول المطلوبة (المادة و السعر و الكمية)')
-        
-#         try:
-#             entered_price = float(price_str)
-#             entered_quantity = int(quantity_str)
-#         except ValueError:
-#             return render_error('السعر والكمية يجب أن تكون أرقامًا صالحة')
-
-#         # Variables to store the final, calculated values for the database
-#         final_price_per_unit = entered_price
-#         final_quantity_of_items = entered_quantity
-
-#         # --- 3. Handle 'many' (Package) Scenario ---
-#         if product_type == "many":
-#             if not items_per_package_str:
-#                 return render_error('يرجى تحديد عدد القطع في الطرد')
-            
-#             try:
-#                 items_per_package = int(items_per_package_str)
-#                 if items_per_package <= 0:
-#                     raise ValueError
-#             except ValueError:
-#                 return render_error('عدد القطع في الطرد يجب أن يكون رقمًا صحيحًا وموجبًا')
-
-#             # Calculation for the database:
-#             # Price per piece = Package Price / Items per Package
-#             final_price_per_unit = entered_price / items_per_package
-            
-#             # Total quantity of items = Number of Packages * Items per Package
-#             final_quantity_of_items = entered_quantity * items_per_package
-
-#         if product_type == "weight":
-
-#             # Calculation for the database:
-#             # Price per piece = Package Price / Items per Package
-#             final_price_per_unit = entered_price / 1000
-            
-#             # Total quantity of items = Number of Packages * Items per Package
-#             final_quantity_of_items = entered_quantity *1000
-#         # If product_type is "one", final_price_per_unit and final_quantity_of_items
-#         # already hold the entered_price and entered_quantity, so no change is needed.
-
-
-#         # --- 4. Handle Classification Lookup ---
-#         classification = None
-#         if classification_id:
-#             try:
-#                 # Fetch the Classification instance using the ID
-#                 classification = Classification.objects.get(id=classification_id)
-#             except Classification.DoesNotExist:
-#                 return render_error('التصنيف المحدد غير صحيح')
-
-#         # --- 5. Create Product in Database ---
-#         Product.objects.create(
-#             is_weight=is_weight,
-#             name=name,
-#             description=description,
-#             price=final_price_per_unit,          # Store the calculated price per single item
-#             quantity=final_quantity_of_items,    # Store the calculated total quantity of single items
-#             classification=classification,        # Pass the Classification instance or None
-#             # tareek
-#             retail_sale_percent=retail_sale_percent,
-#             whole_sale_percent=whole_sale_percent
-#         )
-        
-#         return redirect('add_product')
-        
-#     # --- GET Request ---
-#     return render(request, 'store/add_product.html', {
-#         'classifications': Classification.objects.all()
-#     })
-
-# def add_product(request):
-#     if request.method == "POST":
-#         name = request.POST['name']
-#         type=request.POST['type']
-#         items_per_package=request.POST['items_per_package']
-#         description = request.POST['description']
-#         price = request.POST['price']
-#         quantity = request.POST['quantity']
-#         classification_id = request.POST.get('classification')  # Use .get() to avoid KeyError
-
-#         if name and price and quantity:
-#             classification = None  # Default to None if no classification is selected
-#             if classification_id:  # If a classification ID is provided
-#                 try:
-#                     # Fetch the Classification instance using the ID
-#                     classification = Classification.objects.get(id=classification_id)
-#                 except Classification.DoesNotExist:
-#                     return render(request, 'store/add_product.html', {
-#                         'error': 'التصنيف المحدد غير صحيح',
-#                         'classifications': Classification.objects.all()
-#                     })
-
-#             # Create the Product instance with the Classification instance (or None)
-#             Product.objects.create(
-#                 name=name,
-#                 description=description,
-#                 price=price,
-#                 quantity=quantity,
-#                 classification=classification  # Pass the Classification instance or None
-#             )
-#             # return redirect('home')
-#             return redirect('add_product')
-#         else:
-#             return render(request, 'store/add_product.html', {
-#                 'error': 'الرجاء تعبئة الحقول المطلوبة (المادة و السعر و الكمية)',
-#                 'classifications': Classification.objects.all()
-#             })
-#     return render(request, 'store/add_product.html', {
-#         'classifications': Classification.objects.all()
-#     })
 
 
 # =======================================================================================
@@ -716,61 +428,6 @@ def sell_product(request):
 # =======================================================================================
 
 
-
-# def list_sales(request):
-#     # here 
-#     sales_message=""
-#     current_year = datetime.now().year
-#     months = [(i, f"{i:02d}") for i in range(1, 13)]  # List of tuples
-#     sales = Sale.objects.all()
-
-#     # Get the date range from the request
-#     start_date = request.GET.get('start_date')
-#     end_date = request.GET.get('end_date')
-#     single_date = request.GET.get('single_date')
-
-#     if start_date and end_date:
-#         # Convert string dates to datetime objects using the correct format
-#         start_date = datetime.strptime(start_date, '%Y-%m-%d')
-#         end_date = datetime.strptime(end_date, '%Y-%m-%d')
-
-#         # Include the end date by setting the time to the end of the day
-#         end_date = end_date.replace(hour=23, minute=59, second=59)
-
-#         sales_message = f'المبيعات من تاريخ {start_date.strftime("%d/%m/%Y")} إلى تاريخ {end_date.strftime("%d/%m/%Y")}'
-#         # Filter sales within the date range
-#         sales = sales.filter(date__range=[start_date, end_date])
-#     elif single_date:
-#         # Convert single date to datetime object using the correct format
-#         single_date = datetime.strptime(single_date, '%Y-%m-%d')
-#         sales = sales.filter(date=single_date)
-#         sales_message = f'المبيعات في تاريخ {single_date.strftime("%d/%m/%Y")}'
-
-
-#     if  not start_date and not end_date and not single_date: #no filters => latest 20 sales
-#         sales = sales.order_by('-date', '-id')[:20]
-#         sales_message='اخر عمليات البيع'
-
-#     sales_data = []
-
-#     for sale in sales:
-#         total_items = SaleItem.objects.filter(sale=sale).aggregate(total=Sum('quantity'))['total'] or 0
-#         total_price = sum(item.price_at_sale * item.quantity for item in SaleItem.objects.filter(sale=sale))
-#         total_price_syp = sum(item.price_at_sale * item.quantity * item.dollar_rate_at_sale for item in SaleItem.objects.filter(sale=sale))
-#         sales_data.append({
-#             'sale': sale,
-#             'total_items': total_items,
-#             'total_price': total_price,
-#             'total_price_syp': total_price_syp
-#         })
-
-#     return render(request, 'store/list_sales.html', {'sales_message':sales_message,'sales_data': sales_data,'current_year': current_year,'months': months})
-
-# =======================================================================================
-# =======================================================================================
-# =======================================================================================
-# =======================================================================================
-
 def list_sales(request):
     sales_message = ""
     current_year = datetime.now().year
@@ -861,7 +518,7 @@ def sale_detail(request, sale_id):
 
     all_items_price = sum(item.price_at_sale * item.quantity for item in SaleItem.objects.filter(sale=sale))
     sale_items = SaleItem.objects.filter(sale=sale)
-
+    total_payable_syp=sale.total_payable_price
     # Calculate total prices for each item
     sale_item_details = []
     all_items_price_syp = 0
@@ -887,7 +544,8 @@ def sale_detail(request, sale_id):
         'sale': sale,
         'sale_items': sale_item_details,
         'all_items_price': all_items_price,
-        'all_items_price_syp': all_items_price_syp
+        'all_items_price_syp': all_items_price_syp,
+        'total_payable_syp': total_payable_syp
     })
 
 
@@ -1102,97 +760,6 @@ def generate_pdf(request):
     
     return HttpResponse("This view only accepts POST requests with date parameters.", status=405)
 
-# =======================================================================================
-# =======================================================================================
-# =======================================================================================
-# =======================================================================================
-
-# def generate_pdf(request):
-#     if request.method == 'POST':
-#         month = request.POST.get('month')
-#         year = request.POST.get('year')
-#         sales_data = []
-        
-#         # Fetch sales data for the selected month and year
-#         sales = Sale.objects.filter(date__year=year, date__month=month)
-
-#         # Add the sale detail for each sale
-#         for sale in sales:
-#             total_items = SaleItem.objects.filter(sale=sale).aggregate(total=Sum('quantity'))['total'] or 0
-#             total_price = sum(item.price_at_sale * item.quantity for item in SaleItem.objects.filter(sale=sale))
-#             total_price_syp = sum(item.price_at_sale * item.quantity * item.dollar_rate_at_sale for item in SaleItem.objects.filter(sale=sale))
-#             sales_data.append({
-#                 'sale_id': sale.id,
-#                 'date': sale.date.strftime("%Y-%m-%d"),
-#                 'total_items': total_items,
-#                 'total_price': total_price,
-#                 'total_price_syp': total_price_syp
-#             })
-
-#         # Create a PDF response
-#         response = HttpResponse(content_type='application/pdf')
-#         response['Content-Disposition'] = f'attachment; filename="sales_{year}_{month}.pdf"'
-
-#         # Create PDF
-#         buffer = BytesIO()
-#         doc = SimpleDocTemplate(buffer, pagesize=letter)
-        
-#         # Create a table for sales data
-#         table_data = [['Sale ID', 'Date', 'Total Items', 'Total Price', 'Total Price (SYP)']]
-        
-#         # Check if sales_data is empty
-#         if len(sales_data) == 0:
-#             table_data.append(['-', '-', '-', '-', '-'])  # Append a row with "No sales" message
-#         else:
-#             total_price_sum = 0
-#             total_price_syp_sum = 0
-            
-#             for data in sales_data:
-#                 table_data.append([
-#                     data['sale_id'],
-#                     data['date'],
-#                     data['total_items'],
-#                     f"{data['total_price']:.2f}",  # Format total price to 2 decimal places
-#                     f"{format_number_with_commas(data['total_price_syp'])}"
-#                 ])
-#                 total_price_sum += data['total_price']
-#                 total_price_syp_sum += data['total_price_syp']
-
-#             # Append the totals row
-#             table_data.append([
-#                 '',
-#                 '',
-#                 '',
-#                 f"{total_price_sum:.2f}",  # Total price formatted to 2 decimal places
-#                 f"{format_number_with_commas(total_price_syp_sum)}"  # Total price in SYP as an integer
-#             ])
-
-#         # Create a title for the report
-#         styles = getSampleStyleSheet()
-#         title = Paragraph(f'Sales Report for Month: {month} - Year: {year}', styles['Title'])
-
-#         # Create the table
-#         table = Table(table_data)
-#         table.setStyle(TableStyle([
-#             ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-#             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-#             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-#             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-#             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-#             ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-#             ('GRID', (0, 0), (-1, -1), 1, colors.black),
-#         ]))
-
-#         # Build the PDF
-#         elements = [title, table]
-#         doc.build(elements)
-
-#         # Get the PDF from the buffer
-#         pdf = buffer.getvalue()
-#         buffer.close()
-#         response.write(pdf)
-#         return response
-    
 
 # =======================================================================================
 # =======================================================================================
@@ -1346,54 +913,6 @@ def sales_statistics(request):
 # =======================================================================================
 # =======================================================================================
 
-
-
-# def add_bulk_products(request):
-    
-#     # استخدام النموذج الجديد لإنشاء الـ FormSet
-#     ProductFormSet = formset_factory(ProductBulkAddForm, extra=1) # يمكنك تغيير 5 إلى أي عدد صفوف تريده
-
-#     if request.method == 'POST':
-#         formset = ProductFormSet(request.POST, prefix='products')
-        
-#         if formset.is_valid():
-#             for form in formset:
-#                 # التحقق أن الصف ليس فارغاً
-#                 if form.has_changed() and form.cleaned_data.get('name'):
-                    
-#                     product_name = form.cleaned_data.get('name')
-#                     # هذه هي الكمية المدخلة في النموذج
-#                     quantity_to_add = form.cleaned_data.get('quantity', 0) 
-                    
-#                     try:
-#                         # 1. البحث في قاعدة البيانات
-#                         product = Product.objects.get(name__iexact=product_name)
-                        
-#                         # 2. المنتج موجود: زيادة الكمية فقط
-#                         product.quantity += quantity_to_add
-#                         product.save(update_fields=['quantity'])
-                    
-#                     except Product.DoesNotExist:
-#                         # 3. المنتج غير موجود: إنشاء منتج جديد
-#                         # استدعاء .save() هنا آمن لأنه سيستخدم 
-#                         # دالة .save() الافتراضية (وليس المخصصة)
-#                         new_product = form.save() 
-
-#             # غير 'store:product_list' إلى اسم المسار الصحيح لصفحة قائمة المنتجات
-#             return redirect('product_list') 
-
-#     else:
-#         formset = ProductFormSet(prefix='products')
-
-#     # استخدم نفس القالب المقترح سابقاً
-#     return render(request, 'store/add_bulk_products.html', {'formset': formset})
-
-
-# =======================================================================================
-# =======================================================================================
-# =======================================================================================
-# =======================================================================================
-
 def add_bulk_products(request):
     
     # أضف can_delete=True
@@ -1516,19 +1035,13 @@ def add_transaction(request, trader_pk):
     }
     return render(request, 'store/traders/add_transaction.html', context)
 
-
-
-
-
-
-
-
-
-
-
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
+# =======================================================================================
 
 from django.contrib import messages
-from .printer_utils import print_receipt_usb # Import the utility we made
+from .printer_utils import print_receipt_usb 
 
 def print_receipt(request, serial_number):
     # 1. Fetch the Sale
@@ -1588,62 +1101,6 @@ def print_receipt(request, serial_number):
 # =======================================================================================
 # =======================================================================================
 # =======================================================================================
-
-# def print_receipt(request, serial_number):
-#     # 1. Fetch the Sale
-#     sale = get_object_or_404(Sale, id=serial_number)
-    
-#     # 2. Fetch the Items associated with this sale
-#     sale_items = SaleItem.objects.filter(sale=sale)
-    
-#     # 3. Prepare data for the printer
-#     # We need to calculate the SYP price per line item based on the stored data
-#     printer_items = []
-    
-#     for item in sale_items:
-#         # Calculate Total SYP for this line: 
-#         # (Price USD * Rate) * Quantity
-#         syp_unit_price = item.price_at_sale * item.dollar_rate_at_sale
-#         total_syp_line = syp_unit_price * item.quantity
-#         # Access product.is_weight
-#         # is_weight_product = item.product.is_weight
-
-#         printer_items.append({
-#             'product_name': item.product.name,
-#             'quantity': item.quantity,
-#             'total_price': total_syp_line
-#         })
-
-#     # Format the final payable price
-#     # Assuming total_payable_price in Sale model is already in SYP 
-#     # (Based on your template {{payablePrice|intcomma}})
-#     # payable_display = "{:,}".format(sale.total_payable_price)
-#     payable_display = sale.total_payable_price
-#     # date_display = sale.date.strftime("%Y-%m-%d")
-#     # Current date and time with AM/PM format
-#     # Example: "2025-12-05 04:52 PM"
-#     date_display = datetime.now().strftime("%Y-%m-%d %I:%M %p")
-
-
-#     # 4. Trigger the Print
-#     success, msg = print_receipt_usb(
-#         serial_number=serial_number,
-#         cart_items=printer_items,
-#         total_payable=payable_display,
-#         date_str=date_display
-
-#     )
-
-#     if success:
-#         messages.success(request, "تمت الطباعة بنجاح")
-#     else:
-#         messages.error(request, f"خطأ في الطباعة: {msg}")
-
-#     # Redirect back to home or wherever you prefer
-#     return redirect('home')
-
-
-
 
 
 def financial_box(request):
