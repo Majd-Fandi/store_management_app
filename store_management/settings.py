@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'store_management.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'pos_1',
+        'NAME': 'pos_deploy_db_1',
         'USER': 'postgres',
         'PASSWORD': '12345',
         'HOST': 'localhost',  # PostgreSQL server is on the same machine
