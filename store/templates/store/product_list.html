@@ -10,6 +10,14 @@
 <link rel="stylesheet" type="text/css" href="{% static 'store/product_list.css' %}">
 {% endblock %}
 {% block content %}
+<style>
+.btn svg {
+    width: 16px;  /* Reduce icon size */
+    height: 16px;
+    vertical-align: middle; /* Better alignment */
+}
+
+</style>
 <div class="search-bar">
   <form method="get" action=".">
     <input 
@@ -36,11 +44,22 @@
         </option>
       {% endfor %}
     </select>
-    <button type="submit" class="btn blue">بحث</button>
-    <button type="button" class="btn gray" id="clearSearchInputs">
-      إلغاء البحث
+    <button type="submit" class="btn blue">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+</svg>
     </button>
-    <button type="button" class="btn green">
+    <button type="button" class="btn gray" id="clearSearchInputs">
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    <!-- Larger X covering the icon -->
+    <line x1="7" y1="7" x2="15" y2="15"></line>
+    <line x1="15" y1="7" x2="7" y2="15"></line>
+</svg>
+    </button>
+    <button type="button" class="btn green" style="position:absolute; left:30px;">
       <a href="{% url "classifications_list" %}">الأصناف</a>
     </button>
   </form>

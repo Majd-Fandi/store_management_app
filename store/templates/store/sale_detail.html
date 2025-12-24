@@ -21,6 +21,7 @@
             <th>سعر الصرف وقت المبيع SYP</th>
             <th>إجمالي السعر $</th>
             <th>إجمالي السعر SYP</th>
+            {% comment %} <th>الإجراءات</th> {% endcomment %}
         </tr>
     </thead>
     <tbody>
@@ -38,12 +39,15 @@
             <td>{{ item.dollar_rate_at_sale|floatformat:0|intcomma }}</td>
             <td>{{ item.total_price }}</td>
             <td>{{ item.total_syp_price|floatformat:0|intcomma }}</td>
+            {% comment %} <td> <a href="{% url 'retrieve_sale_item' item.id %}">استرداد</a></td> {% endcomment %}
+            
         </tr>
         {% endfor %}
         <tr>
             <td colspan="4" style="text-align:center">المجموع</td>
             <td>{{all_items_price}}</td>
             <td>{{all_items_price_syp|floatformat:0|intcomma}} = <strong>{{total_payable_syp|floatformat:0|intcomma}}</strong></td>
+            {% comment %} <td> </td> {% endcomment %}
         </tr>
     </tbody>
 </table>

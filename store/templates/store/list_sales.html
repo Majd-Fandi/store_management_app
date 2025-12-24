@@ -5,7 +5,14 @@
 {% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'store/sales.css' %}">
 
+<style>
+.btn svg {
+    width: 16px;  /* Reduce icon size */
+    height: 16px;
+    vertical-align: middle; /* Better alignment */
+}
 
+</style>
 
 <form method="get" action="{% url 'list_sales' %}">
     <label for="start_date" class="form-label"> من تاريخ :</label>
@@ -14,8 +21,13 @@
     <label for="end_date" class="form-label"> إلى تاريخ :</label>
     <input type="date" id="end_date" name="end_date">
     
-    <button type="submit" class="btn blue">تصفية</button>
-    <button type="button" class="btn special_blue" onclick="openModal()">
+    <button type="submit" class="btn blue">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+</svg>
+    </button>
+    <button type="button" class="btn special_blue" style="position:absolute; left:30px;" onclick="openModal()">
         تقرير مبيعات
 </button>
 {% comment %} <button type="button" class="btn green">
@@ -28,13 +40,27 @@
 <form>
     <label for="single_date"  class="form-label">في تاريخ :</label>
     <input type="date" id="single_date" name="single_date">
-    <button type="submit" class="btn blue">تصفية</button>
-    <button type="button" class="btn gray" id="clearSearch">إلغاء البحث</button>
+    <button type="submit" class="btn blue">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+</svg>
+    </button>
 </form>
 <!-- Add this search form for sale ID -->
+<hr>
 <form method="get" action="{% url 'list_sales' %}" style="margin-bottom: 20px;">
-    <label for="sale_id" class="form-label">الفاتورة :</label>
+    <label for="sale_id" class="form-label">البحث برقم الفاتورة :  </label>
     <input type="number" id="sale_id" name="sale_id" placeholder="أدخل رقم الفاتورة ثم إضغط : Enter" min="1">
+    <button type="button" class="btn gray" id="clearSearch">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    <!-- Larger X covering the icon -->
+    <line x1="7" y1="7" x2="15" y2="15"></line>
+    <line x1="15" y1="7" x2="7" y2="15"></line>
+</svg>
+    </button>
     {% comment %} <button type="submit" class="btn blue">بحث</button> {% endcomment %}
 </form>
 <p style="text-align:center; "><strong>{{sales_message}}</strong></p>
@@ -158,7 +184,7 @@
     <label for="single_date"  class="form-label">في تاريخ :</label>
     <input type="date" id="single_date" name="single_date">
     <button type="submit" class="btn blue">تصفية</button>
-    <button type="button" class="btn gray" id="clearSearch">إلغاء البحث</button>
+    <button type="button" class="btn gray" id="clearSearch">C</button>
 </form>
 <p style="text-align:center; "><strong>{{sales_message}}</strong></p>
 

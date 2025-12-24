@@ -35,6 +35,7 @@ urlpatterns = [
     path('traders/add/', views.add_trader, name='add_trader'),
     path('traders/<int:pk>/', views.trader_detail, name='trader_detail'),
     path('financial-box', views.financial_box, name='financial_box'),
+    # path('retrieve-sale-item/<int:item_id>/', views.retrieve_sale_item, name='retrieve_sale_item'),
 
     
     # Transaction URLs

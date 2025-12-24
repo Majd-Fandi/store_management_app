@@ -65,7 +65,9 @@ class SaleItem(models.Model):
     quantity = models.PositiveIntegerField()  # Quantity of the product sold
     price_at_sale = models.DecimalField(max_digits=10, decimal_places=4)  # Price at the time of sale
     dollar_rate_at_sale=models.DecimalField(max_digits=10, decimal_places=4)
-
+    class Meta:
+        verbose_name = "Sale Item"
+        verbose_name_plural = "Sale Items" 
     def save(self, *args, **kwargs):
         if self.dollar_rate_at_sale is None:
             self.dollar_rate_at_sale = Settings.objects.filter(key='dollar_rate').first().value
@@ -202,4 +204,7 @@ class Transaction(models.Model):
 
 
 class FinancialBox(models.Model):
+    class Meta:
+        verbose_name = "Financial Box"
+        verbose_name_plural = "Financial Box"  
     current_amount = models.BigIntegerField(default=0)

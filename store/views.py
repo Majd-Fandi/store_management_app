@@ -515,9 +515,18 @@ def sale_detail(request, sale_id):
     #     sale = get_object_or_404(Sale, id=sale_id)
     # except Http404:
     #     return render(request, '404.html', status=404)  # Render your custom 404 page
-
-    all_items_price = sum(item.price_at_sale * item.quantity for item in SaleItem.objects.filter(sale=sale))
     sale_items = SaleItem.objects.filter(sale=sale)
+    
+    # Calculate all_items_price with is_weight check
+    all_items_price = 0
+    for item in sale_items:
+        if item.product.is_weight:
+            all_items_price += item.price_at_sale * item.quantity / 1000
+        else:
+            all_items_price += item.price_at_sale * item.quantity
+
+    # all_items_price = sum(item.price_at_sale * item.quantity for item in SaleItem.objects.filter(sale=sale))
+
     total_payable_syp=sale.total_payable_price
     # Calculate total prices for each item
     sale_item_details = []
@@ -532,6 +541,7 @@ def sale_detail(request, sale_id):
 
         all_items_price_syp += total_price * item.dollar_rate_at_sale
         sale_item_details.append({
+            'id':item.id,
             'product': item.product,
             'quantity': item.quantity,
             'price_per_item': item.price_at_sale,  # Use the captured price
@@ -1040,7 +1050,7 @@ def add_transaction(request, trader_pk):
 # =======================================================================================
 # =======================================================================================
 
-from django.contrib import messages
+# from django.contrib import messages
 from .printer_utils import print_receipt_usb 
 
 def print_receipt(request, serial_number):
@@ -1082,6 +1092,9 @@ def print_receipt(request, serial_number):
     date_display = datetime.now().strftime("%Y-%m-%d %I:%M %p")
     # print(printer_items) #Debug
 
+    # for item in printer_items:
+    #     print(item["product_name"],item["quantity"],item["total_price"])
+    
     # 4. Trigger the Printer
     success, msg = print_receipt_usb(
         serial_number=serial_number,
@@ -1090,11 +1103,15 @@ def print_receipt(request, serial_number):
         date_str=date_display
     )
 
+    # if success:
+    #     messages.success(request, "تمت الطباعة بنجاح")
+    # else:
+    #     messages.error(request, f"خطأ في الطباعة: {msg}")
+    
     if success:
-        messages.success(request, "تمت الطباعة بنجاح")
+        print(request, "تمت الطباعة بنجاح")
     else:
-        messages.error(request, f"خطأ في الطباعة: {msg}")
-
+        print(request, f"خطأ في الطباعة: {msg}")
     return redirect('home')
 
 # =======================================================================================
@@ -1149,3 +1166,29 @@ def financial_box(request):
             'total_sales_today':total_sales_today,
         },
     )
+
+
+# from django.contrib import messages
+
+# def retrieve_sale_item(request, item_id):
+#     sale_item = get_object_or_404(SaleItem, id=item_id)
+    
+#     # Add quantity back to product
+#     product = sale_item.product
+#     product.quantity += sale_item.quantity
+#     product.save()
+    
+#     # Delete the sale item
+#     sale = sale_item.sale
+#     if sale_item.product.is_weight:
+#         sale.total_payable_price -= sale_item.price_at_sale * sale_item.quantity/1000 *sale_item.dollar_rate_at_sale
+#     else:
+#         sale.total_payable_price -= sale_item.price_at_sale * sale_item.quantity *sale_item.dollar_rate_at_sale
+        
+#     sale.save()
+#     sale_item.delete()
+    
+#     # Show success message
+#     messages.success(request, f"تم استرداد {sale_item.quantity} من {product.name}")
+    
+#     return redirect('sale_detail', sale_id=sale.id)
