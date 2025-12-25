@@ -8,9 +8,10 @@
     onclick="location.reload();"
 >
 Refresh
-</button> {% endcomment %}
+</button> 
 <p style="border:1px dashed black; padding:5px; width:fit-content">قيمة الصندوق : <strong>{{current_box_value|intcomma}}</strong> SYP</p>
 <p style="font-size:small; color:gray">ملاحظة * : قيمة الصندوق تزداد عند بيع المواد و تنقص عند إجراء عملية دفع في الحسابات.</p>
+{% endcomment %}
     <p> سعر جميع البضائع المتوفرة : $ <strong>{{store_products_price|floatformat:2}}</strong> = <strong>{{store_products_price_syp|floatformat:0|intcomma}}</strong> SYP</p>
     <p> إجمالي مبيعات اليوم : <strong>{{total_sales_today|intcomma}}</strong> SYP</p>
 {% endblock content %}
